@@ -3,9 +3,9 @@ from fractions import Fraction
 from typing import Tuple
 
 B_RANGES = {
-    "easy": (-2.0, -0.7),
-    "medium": (-0.5, 0.6),
-    "hard": (1.5, 3.5),
+    "easy": (-0.5, 0.6),     # was medium
+    "medium": (1.5, 3.5),    # was hard (new harder variant)
+    "hard": (3.5, 5.5),      # NEW: extreme, beyond C2
 }
 A_RANGE = (1.0, 1.6)
 
