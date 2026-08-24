@@ -1674,11 +1674,16 @@ async function deleteAccount(id) {
   }
 }
 
+function on(id, fn) {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener("click", fn);
+  return el;
+}
+
 function wireChrome() {
   document.getElementById("brand-about").addEventListener("click", openAbout);
-  document.getElementById("about-open").addEventListener("click", openAbout);
-  document.getElementById("accounts-open").addEventListener("click",
-    openAccountPanel);  document.getElementById("about-close").addEventListener("click", closeAbout);
+  on("about-open", openAbout);
+  on("accounts-open", openAccountPanel);  document.getElementById("about-close").addEventListener("click", closeAbout);
   document.getElementById("about-backdrop").addEventListener("click", (e) => {
     if (e.target === e.currentTarget) closeAbout();
   });
@@ -1699,17 +1704,16 @@ function wireChrome() {
     render();
   });
   const acctBackdrop = document.getElementById("acct-backdrop");
-  document.getElementById("acct-close").addEventListener("click",
-    closeAccountPanel);
+  on("acct-close", closeAccountPanel);
   acctBackdrop.addEventListener("click", (e) => {
     if (e.target === acctBackdrop) closeAccountPanel();
   });
-  document.getElementById("acct-add-guest").addEventListener("click", () => {
+  on("acct-add-guest", () => {
     closeAccountPanel();
     state.user = null;
     setView("home");
   });
-  document.getElementById("acct-google").addEventListener("click", async () => {
+  on("acct-google", async () => {
     try {
       await loadGsiScript();
       window.google.accounts.id.initialize({
@@ -1722,8 +1726,7 @@ function wireChrome() {
       showError(err.message);
     }
   });
-  document.getElementById("acct-export").addEventListener("click",
-    async () => {
+  on("acct-export", async () => {
       try {
         let bundle;
         if (state.x) {
@@ -1751,42 +1754,40 @@ function wireChrome() {
         showError(err.message);
       }
     });
-  document.getElementById("acct-import").addEventListener("click",
-    () => document.getElementById("acct-import-file").click());
-  document.getElementById("acct-import-file").addEventListener("change",
-    (ev) => {
-      const file = ev.target.files[0];
-      if (!file) return;
-      const reader = new FileReader();
-      reader.onload = async () => {
-        ev.target.value = "";
-        try {
-          const parsed = JSON.parse(reader.result);
-          if (parsed.kind !== "satprep-progress" || !parsed.payload) {
-            throw new Error("Unrecognized progress file.");
-          }
-          if (state.x) {
-            if (parsed.mode !== "x") {
-              throw new Error("Server export detected. Import it while " +
-                "signed in on that deployment instead.");
-            }
-            saveXBlob(parsed.payload);
-            await loadThetaMap();
-          } else {
-            if (parsed.mode !== "db") {
-              throw new Error("This is a browser save file; import it on " +
-                "the device that exported it.");
-            }
-            await api("POST", "/api/import", parsed);
-            await loadThetaMap();
-          }
-          showNotice("Import complete.");
-        } catch (err) {
-          showError(err.message);
+  on("acct-import", () => document.getElementById("acct-import-file").click());
+  on("acct-import-file", (ev) => {
+    const file = ev.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = async () => {
+      ev.target.value = "";
+      try {
+        const parsed = JSON.parse(reader.result);
+        if (parsed.kind !== "satprep-progress" || !parsed.payload) {
+          throw new Error("Unrecognized progress file.");
         }
-      };
-      reader.readAsText(file);
-    });
+        if (state.x) {
+          if (parsed.mode !== "x") {
+            throw new Error("Server export detected. Import it while " +
+              "signed in on that deployment instead.");
+          }
+          saveXBlob(parsed.payload);
+          await loadThetaMap();
+        } else {
+          if (parsed.mode !== "db") {
+            throw new Error("This is a browser save file; import it on " +
+              "the device that exported it.");
+          }
+          await api("POST", "/api/import", parsed);
+          await loadThetaMap();
+        }
+        showNotice("Import complete.");
+      } catch (err) {
+        showError(err.message);
+      }
+    };
+    reader.readAsText(file);
+  });
   const resetBtn = document.getElementById("about-reset");
   if (resetBtn) {
     resetBtn.addEventListener("click", async () => {
