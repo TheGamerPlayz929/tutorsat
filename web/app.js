@@ -490,6 +490,15 @@ function renderOnboarding() {
     if (nameLabel) {
       nameLabel.textContent = "Your name (profile stays in this browser)";
     }
+    if (!state.user && getAccounts().length) {
+      const hint = document.createElement("p");
+      hint.className = "muted mono";
+      hint.style.cssText = "font-size:.72rem;margin-top:12px;";
+      hint.textContent = getAccounts().length + " profile(s) already exist on " +
+        "this browser — open ACCOUNTS (top bar) to resume one.";
+      const panel = document.querySelector(".panel");
+      panel.appendChild(hint);
+    }
   }
   if (state.googleClientId) renderGoogleButton();
 }
@@ -1667,7 +1676,9 @@ async function deleteAccount(id) {
 
 function wireChrome() {
   document.getElementById("brand-about").addEventListener("click", openAbout);
-  document.getElementById("about-open").addEventListener("click", openAbout);  document.getElementById("about-close").addEventListener("click", closeAbout);
+  document.getElementById("about-open").addEventListener("click", openAbout);
+  document.getElementById("accounts-open").addEventListener("click",
+    openAccountPanel);  document.getElementById("about-close").addEventListener("click", closeAbout);
   document.getElementById("about-backdrop").addEventListener("click", (e) => {
     if (e.target === e.currentTarget) closeAbout();
   });
@@ -1814,11 +1825,16 @@ async function boot() {
   initTheme();
   wireChrome();
   migrateLegacyBlob();
-  try {
-    const cap = await api("GET", "/api/x/capabilities");
-    state.x = !!cap.stateless;
-  } catch (e) {
-    state.x = false;
+  const existingBlob = loadXBlob();
+  if (existingBlob) {
+    state.x = true;
+  } else {
+    try {
+      const cap = await api("GET", "/api/x/capabilities");
+      state.x = !!cap.stateless;
+    } catch (e) {
+      state.x = false;
+    }
   }
   const resetBtn = document.getElementById("about-reset");
   if (resetBtn) resetBtn.hidden = !state.x;
@@ -1828,9 +1844,8 @@ async function boot() {
   } catch (e) {
     state.googleClientId = null;
   }
-  const xBlob = state.x ? loadXBlob() : null;
-  if (state.x && xBlob) {
-    const uid = xBlob.user_id || "local";
+  if (state.x && existingBlob) {
+    const uid = existingBlob.user_id || "local";
     const acct = findAccount(uid);
     state.user = { user_id: uid,
       name: (acct && acct.name)
