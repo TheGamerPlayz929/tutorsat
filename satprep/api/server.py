@@ -351,6 +351,41 @@ def _x_load_practice(st, learner, session_id):
     return entry, session
 
 
+def _already_answered_result(entry, session, choice_index):
+    """Idempotent replay when a retried request hits an already-graded item."""
+    pending_id = None
+    if session._pending_index is not None:
+        pending_id = session.questions[session._pending_index].question_id
+    target_id = pending_id
+    if target_id is None and entry.get("responses"):
+        target_id = entry["responses"][-1]["item_id"]
+    if target_id is None:
+        return None
+    match = next((r for r in entry.get("responses", [])
+                  if r["item_id"] == target_id), None)
+    if match is None:
+        return None
+    question = session.questions[session._pending_index] \
+        if session._pending_index is not None \
+        else next((q for q in session.questions
+                   if q.question_id == target_id), None)
+    if question is None:
+        return None
+    return {
+        "correct": bool(match["correct"]),
+        "correct_choice": question.correct_choice(),
+        "explanation": question.explanation,
+        "skill_id": question.skill_id,
+        "theta_before": float(match.get("tb", 0.0)),
+        "theta_after": float(match.get("ta", 0.0)),
+        "answered": len(entry.get("responses", [])),
+        "total_questions": len(session.questions),
+        "finished": session.finished,
+        "summary": session.summary() if session.finished else None,
+        "replayed": True,
+    }
+
+
 @route("POST", r"^/api/x/session/next$")
 def x_session_next(state, m, body):
     st, tampered = _x_prepare(body.get("state"), state)
@@ -376,6 +411,11 @@ def x_session_answer(state, m, body):
     learner = xs.learner_from_state(st)
     entry, session = _x_load_practice(st, learner, str(body.get("session_id")))
     choice_index = int(body.get("choice_index"))
+    replay = _already_answered_result(entry, session, choice_index)
+    if replay is not None:
+        payload = dict(replay)
+        payload["answered"] = session.answered_count
+        return 200, _x_finish(state, st, tampered, payload)
     try:
         rec = session.answer(choice_index)
     except RuntimeError as e:

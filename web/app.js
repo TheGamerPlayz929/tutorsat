@@ -186,7 +186,20 @@ async function api(method, path, body) {
     options.headers["Content-Type"] = "application/json";
     options.body = JSON.stringify(body);
   }
-  const res = await fetch(API_BASE + path, options);
+  let res;
+  for (let attempt = 0; attempt < 2; attempt++) {
+    try {
+      res = await fetch(API_BASE + path, options);
+      break;
+    } catch (networkError) {
+      if (attempt === 0) {
+        await new Promise((r) => setTimeout(r, 1500));
+        continue;
+      }
+      throw new Error(
+        "Connection hiccup. Check your internet and submit again.");
+    }
+  }
   let data = {};
   try { data = await res.json(); } catch (e) { /* empty body */ }
   if (!res.ok) {
