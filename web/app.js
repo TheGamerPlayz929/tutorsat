@@ -495,7 +495,7 @@ function renderOnboarding() {
       hint.className = "muted mono";
       hint.style.cssText = "font-size:.72rem;margin-top:12px;";
       hint.textContent = getAccounts().length + " profile(s) already exist on " +
-        "this browser — open ACCOUNTS (top bar) to resume one.";
+        "this browser: open ACCOUNTS (top bar) to resume one.";
       const panel = document.querySelector(".panel");
       panel.appendChild(hint);
     }
