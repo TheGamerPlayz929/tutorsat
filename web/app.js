@@ -119,34 +119,81 @@ function xBlobKey(id) {
                               || "local");
 }
 
+function listXBlobKeys() {
+  const out = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k && k.startsWith("satprep_x_blob_")) out.push(k);
+  }
+  return out;
+}
+
 function migrateLegacyBlob() {
   const legacy = localStorage.getItem(X_BLOB_KEY);
   if (!legacy) return;
+  const blob = _parseBlob(legacy);
   localStorage.removeItem(X_BLOB_KEY);
-  let blob = null;
-  try { blob = JSON.parse(legacy); } catch (e) { return; }
-  const owner = (blob && blob.user_id) || "local";
-  const key = "satprep_x_blob_" + owner;
-  if (!localStorage.getItem(key)) localStorage.setItem(key, legacy);
+  if (!blob) return;
+  saveXBlob(blob);
+  const owner = blob.user_id || "local";
   if (!getAccounts().some((a) => a.id === owner)) {
     upsertAccount(owner,
-      (localStorage.getItem("satprep_name") &&
-       owner === "local") ? localStorage.getItem("satprep_name")
-        : "Guest", owner.startsWith("g-") ? "google" : "local");
+      owner === "local"
+        ? (localStorage.getItem("satprep_name") || "Guest") : "Guest",
+      owner.startsWith("g-") ? "google" : "local");
   }
 }
 
-function loadXBlob(forId) {
-  const raw = localStorage.getItem(xBlobKey(forId));
+function _parseBlob(raw) {
   try {
-    return raw ? JSON.parse(raw) : null;
+    const blob = JSON.parse(raw);
+    return blob && blob.v ? blob : null;
   } catch (e) {
     return null;
   }
 }
 
+function listXBlobKeys() {
+  const out = [];
+  for (let i = 0; i < localStorage.length; i++) {
+    const k = localStorage.key(i);
+    if (k && k.startsWith("satprep_x_blob_")) out.push(k);
+  }
+  return out;
+}
+
+function _parseBlob(raw) {
+  try {
+    const blob = JSON.parse(raw);
+    return blob && blob.v ? blob : null;
+  } catch (e) {
+    return null;
+  }
+}
+
+function loadXBlob(forId) {
+  if (forId) {
+    const raw = localStorage.getItem(xBlobKey(forId));
+    return raw ? _parseBlob(raw) : null;
+  }
+  const direct = localStorage.getItem(xBlobKey(localStorage
+    .getItem("satprep_uid")));
+  if (direct) return _parseBlob(direct);
+  let best = null;
+  let bestTs = -1;
+  for (const key of listXBlobKeys()) {
+    const blob = _parseBlob(localStorage.getItem(key));
+    if (blob && (blob.saved_at || 0) > bestTs) {
+      bestTs = blob.saved_at || 0;
+      best = blob;
+    }
+  }
+  return best;
+}
+
 function saveXBlob(blob) {
   if (!blob) return;
+  blob.saved_at = Date.now();
   const id = blob.user_id || localStorage.getItem("satprep_uid") || "local";
   localStorage.setItem(xBlobKey(id), JSON.stringify(blob));
 }
@@ -1877,6 +1924,10 @@ async function boot() {
     return;
   }
   render();
+  // Auto-open account panel if there are existing accounts but no active user
+  if (!state.user && getAccounts().length > 0 && state.x) {
+    openAccountPanel();
+  }
 }
 
 boot();
