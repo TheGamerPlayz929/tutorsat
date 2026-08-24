@@ -1,0 +1,26 @@
+# Caddy reverse proxy for SAT Adaptive Prep Engine.
+# Caddy obtains and renews TLS certificates automatically.
+#
+# The app itself stays bound to 127.0.0.1 (see docker-compose.yml or the
+# systemd unit), so only Caddy is reachable from the internet.
+
+tutorsat.example.com {
+    encode zstd gzip
+
+    reverse_proxy 127.0.0.1:8765 {
+        header_up X-Forwarded-Proto {scheme}
+        header_up X-Forwarded-Host {host}
+    }
+
+    header {
+        Strict-Transport-Security "max-age=31536000"
+        X-Content-Type-Options "nosniff"
+        Referrer-Policy "strict-origin-when-cross-origin"
+    }
+
+    # Optional: lock the deployment to a single visitor/classroom.
+    # Uncomment and generate credentials with: caddy hash-password
+    # basic_auth {
+    #     student <hashed-password>
+    # }
+}

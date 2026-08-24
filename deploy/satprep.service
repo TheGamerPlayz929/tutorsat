@@ -1,0 +1,24 @@
+[Unit]
+Description=SAT Adaptive Prep Engine
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=satprep
+Group=satprep
+WorkingDirectory=/opt/satprep
+ExecStart=/usr/bin/python3 /opt/satprep/run.py --host 127.0.0.1 --port 8765 --db /var/lib/satprep/satprep.db
+EnvironmentFile=-/etc/satprep.env
+Restart=on-failure
+RestartSec=3
+
+# Hardening
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=/var/lib/satprep
+PrivateTmp=true
+ProtectHome=true
+
+[Install]
+WantedBy=multi-user.target

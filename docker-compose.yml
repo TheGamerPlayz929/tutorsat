@@ -1,0 +1,19 @@
+services:
+  satprep:
+    build: .
+    image: sat-adaptive-prep-engine
+    container_name: satprep
+    restart: unless-stopped
+    ports:
+      - "127.0.0.1:8765:8765"
+    environment:
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+    volumes:
+      - ./data:/data
+    healthcheck:
+      test: ["CMD", "python", "-c",
+             "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8765/api/health', timeout=4)"]
+      interval: 30s
+      timeout: 5s
+      start_period: 5s
+      retries: 3
