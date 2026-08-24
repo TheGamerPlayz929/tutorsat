@@ -664,7 +664,8 @@ def gen_central_ideas_details(rng, difficulty):
 
 
 def gen_command_of_evidence(rng, difficulty):
-    topic = rng.choice(CLAIM_EVIDENCE_TOPICS)
+    eligible = [t for t in CLAIM_EVIDENCE_TOPICS if t["tier"] == difficulty] or CLAIM_EVIDENCE_TOPICS
+    topic = rng.choice(eligible)
     n = rng.randrange(20, 60, 2)
     gap = rng.randint(4, 9)
     hi = rng.randint(72, 84)
