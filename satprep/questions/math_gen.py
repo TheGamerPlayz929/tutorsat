@@ -271,17 +271,81 @@ def gen_nonlinear_equations(rng, difficulty):
         expl = (f"Square both sides: {k}x + {m} = {n * n}. So {k}x = {rem} and "
                 f"x = {x}. Check: \u221a({k}\u00b7{x} + {m}) = {n}.")
     else:
-        r1 = _pick(rng, -5, 5, exclude=(0,))
-        r2 = _pick(rng, -5, 5, exclude=(r1, 0))
-        a = _pick(rng, 2, 4)
-        b = -a * (r1 + r2)
-        c = a * r1 * r2
-        prompt = f"What is the larger solution to {_poly([a, b, c])} = 0?"
-        correct = str(max(r1, r2))
-        distract = [min(r1, r2), -max(r1, r2), max(r1, r2) + 1, a]
-        expl = (f"Divide by {a} and factor: (x - {r1})(x - {r2}) = 0, giving "
-                f"x = {r1} or x = {r2}. The larger solution is {max(r1, r2)}.")
-    choices, idx = build_choices(rng, correct, [str(d) if isinstance(d, int) else d
+        # Hard: quadratics requiring quadratic formula, completing square, or substitution
+        variant = rng.choice(["quadratic_formula", "completing_square", "u_substitution", "leading_coeff"])
+        if variant == "leading_coeff":
+            r1 = _pick(rng, -5, 5, exclude=(0,))
+            r2 = _pick(rng, -5, 5, exclude=(r1, 0))
+            a = _pick(rng, 2, 4)
+            b = -a * (r1 + r2)
+            c = a * r1 * r2
+            prompt = f"What is the larger solution to {_poly([a, b, c])} = 0?"
+            correct = str(max(r1, r2))
+            distract = [min(r1, r2), -max(r1, r2), max(r1, r2) + 1, a]
+            expl = (f"Divide by {a} and factor: (x - {r1})(x - {r2}) = 0, giving "
+                    f"x = {r1} or x = {r2}. The larger solution is {max(r1, r2)}.")
+        elif variant == "quadratic_formula":
+            # Roots requiring quadratic formula (discriminant not perfect square)
+            while True:
+                a = _pick(rng, 1, 5)
+                b = _pick(rng, -8, 8)
+                c = _pick(rng, -8, 8)
+                disc = b * b - 4 * a * c
+                if disc > 0 and int(disc ** 0.5) ** 2 != disc:
+                    break
+            import math
+            r1 = (-b + math.sqrt(disc)) / (2 * a)
+            r2 = (-b - math.sqrt(disc)) / (2 * a)
+            correct = fmt_number(max(r1, r2))
+            # Distractors: wrong sign, wrong disc, etc.
+            wrong1 = fmt_number(min(r1, r2))
+            wrong2 = fmt_number((-b + math.sqrt(abs(disc))) / (2 * a)) if disc > 0 else fmt_number(-b / (2 * a))
+            wrong3 = fmt_number(-b / a)
+            prompt = f"What is the larger solution to {_poly([a, b, c])} = 0?"
+            distract = [wrong1, wrong2, wrong3]
+            expl = (f"Quadratic formula: x = ({-b} \u00b1 \u221a({disc})) / {2*a}. "
+                    f"The larger root is {correct}.")
+        elif variant == "completing_square":
+            # (x + p)^2 = q form
+            p = _pick(rng, -5, 5)
+            q = _pick(rng, 2, 10)
+            while q in [1, 4, 9, 16, 25]:  # avoid perfect squares
+                q = _pick(rng, 2, 10)
+            a = 1
+            b = 2 * p
+            c = p * p - q
+            import math
+            r1 = -p + math.sqrt(q)
+            r2 = -p - math.sqrt(q)
+            correct = fmt_number(max(r1, r2))
+            wrong1 = fmt_number(min(r1, r2))
+            wrong2 = fmt_number(-p + q)
+            wrong3 = fmt_number(-p)
+            prompt = f"If (x + {p})\u00b2 = {q}, what is the larger solution?"
+            distract = [wrong1, wrong2, wrong3]
+            expl = (f"Take square roots: x + {p} = \u00b1\u221a{q}. "
+                    f"x = -{p} \u00b1 \u221a{q}. Larger: {correct}.")
+        else:  # u_substitution
+            # x^4 + bx^2 + c = 0 form
+            u1 = _pick(rng, 1, 9)
+            u2 = _pick(rng, 1, 9)
+            while u1 == u2:
+                u2 = _pick(rng, 1, 9)
+            b = -(u1 + u2)
+            c = u1 * u2
+            import math
+            r1 = math.sqrt(max(u1, u2))
+            r2 = -math.sqrt(max(u1, u2))
+            correct = fmt_number(max(r1, r2))
+            wrong1 = fmt_number(min(r1, r2))
+            wrong2 = fmt_number(math.sqrt(min(u1, u2)))
+            wrong3 = fmt_number(max(u1, u2))
+            prompt = f"What is the largest real solution to x\u2074 + {b}x\u00b2 + {c} = 0?"
+            distract = [wrong1, wrong2, wrong3]
+            expl = (f"Substitute u = x\u00b2: u\u00b2 + {b}u + {c} = 0. "
+                    f"Roots: u = {u1}, {u2}. Real x = \u00b1\u221a{max(u1, u2)}. "
+                    f"Largest: {correct}.")
+    choices, idx = build_choices(rng, correct, [str(d) if isinstance(d, (int, float)) else d
                                                 for d in distract])
     return {"prompt": prompt, "choices": list(choices), "answer_index": idx,
             "explanation": expl}
