@@ -542,6 +542,69 @@ AGREEMENT_SUBJECTS = [
     "both co-chairs",
 ]
 
+COMPLEX_SUBJECTS = [
+    "the committee members along with the chair",
+    "neither the director nor the assistants",
+    "the data and the analysis",
+    "either the proposal or the amendments",
+    "a variety of factors",
+    "the number of applicants",
+    "the majority of the board",
+    "each of the proposals",
+]
+
+AGREEMENT_VERBS = [
+    ("approve", "approves"),
+    ("reject", "rejects"),
+    ("support", "supports"),
+    ("oppose", "opposes"),
+    ("review", "reviews"),
+    ("modify", "modifies"),
+    ("delay", "delays"),
+    ("accept", "accepts"),
+]
+
+TENSE_TEMPLATES = [
+    {
+        "prompt": ("By the time the committee ______ its report, the deadline "
+                   "will have passed.\n\nWhich choice completes the text so that it "
+                   "conforms to the conventions of Standard English?"),
+        "correct": "submits",
+        "wrongs": ["submit", "submitted", "will submit"],
+        "expl": ("Future perfect 'will have passed' sets a future reference point; "
+                 "the subordinate clause requires present tense 'submits' to indicate "
+                 "an action completed before that future moment.")
+    },
+    {
+        "prompt": ("Had the board ______ the amendment earlier, the vote "
+                   "would have proceeded differently.\n\nWhich choice completes the text so that it "
+                   "conforms to the conventions of Standard English?"),
+        "correct": "reviewed",
+        "wrongs": ["review", "reviews", "reviewing"],
+        "expl": ("Counterfactual past perfect requires 'had + past participle' "
+                 "('had reviewed'); the other forms create tense mismatches.")
+    },
+    {
+        "prompt": ("The analyst recommended that the policy ______ immediately.\n\n"
+                   "Which choice completes the text so that it conforms to "
+                   "the conventions of Standard English?"),
+        "correct": "be implemented",
+        "wrongs": ["is implemented", "implements", "implemented"],
+        "expl": ("Mandative subjunctive after 'recommended that' requires "
+                 "bare infinitive 'be implemented'; indicative forms are ungrammatical here.")
+    },
+    {
+        "prompt": ("Not only ______ the data support the hypothesis, but it "
+                   "also suggests a new mechanism.\n\nWhich choice completes the text so that it "
+                   "conforms to the conventions of Standard English?"),
+        "correct": "does",
+        "wrongs": ["do", "did", "doing"],
+        "expl": ("Inversion with 'not only' requires auxiliary 'does' for singular "
+                 "subject 'the data' (treated as singular in formal usage); 'do' would "
+                 "be plural agreement.")
+    },
+]
+
 RELATION_CONNECTORS = {
     "consequence": ["consequently", "therefore", "as a result"],
     "contrast": ["however", "nevertheless", "by contrast"],
@@ -709,19 +772,46 @@ def gen_sentence_boundaries(rng, difficulty):
 
 
 def gen_form_structure_sense(rng, difficulty):
-    verb_set = rng.choice(INFINITIVE_VERBS)
-    subject = rng.choice(AGREEMENT_SUBJECTS)
-    base, gerund, past, third = verb_set
-    correct = base
-    distractors = [gerund, past, third]
-    prompt = (f"Facing a budget shortfall, {subject} voted to ______ the construction "
-              f"deadline by six months.\n\nWhich choice completes the text so that it "
-              f"conforms to the conventions of Standard English?")
+    if difficulty == "easy":
+        # Simple infinitive: "voted to ______"
+        verb_set = rng.choice(INFINITIVE_VERBS)
+        subject = rng.choice(AGREEMENT_SUBJECTS)
+        base, gerund, past, third = verb_set
+        correct = base
+        distractors = [gerund, past, third]
+        prompt = (f"Facing a budget shortfall, {subject} voted to ______ the construction "
+                  f"deadline by six months.\n\nWhich choice completes the text so that it "
+                  f"conforms to the conventions of Standard English?")
+        expl = (f"After 'to' used as an infinitive marker, English requires "
+                f"the base verb form '{base}', not a participle or a conjugated form.")
+    elif difficulty == "medium":
+        # Subject-verb agreement with complex subject
+        subject = rng.choice(COMPLEX_SUBJECTS)
+        verb_set = rng.choice(AGREEMENT_VERBS)
+        base, third = verb_set
+        is_plural = rng.choice([True, False])
+        if is_plural:
+            correct = base
+            distractors = [third, base + "s", third + "ed"]
+            # Make subject plural
+            subject = subject.replace("each ", "all ").replace("every ", "all ")
+        else:
+            correct = third
+            distractors = [base, third + "s", base + "ed"]
+        prompt = (f"{subject} ______ the proposal after reviewing the data.\n\n"
+                  f"Which choice completes the text so that it conforms to "
+                  f"the conventions of Standard English?")
+        expl = (f"The subject '{subject}' is {'plural' if is_plural else 'singular'}, "
+                f"requiring the {'base' if is_plural else 'third-person singular'} verb form '{correct}'.")
+    else:  # hard
+        # Verb tense/aspect consistency in complex sentence
+        template = rng.choice(TENSE_TEMPLATES)
+        correct = template["correct"]
+        distractors = template["wrongs"]
+        prompt = template["prompt"]
+        expl = template["expl"]
     choices, idx = build_choices(rng, correct, distractors)
-    return {"prompt": prompt, "choices": list(choices), "answer_index": idx,
-            "explanation": ("After 'to' used as an infinitive marker, English requires "
-                            f"the base verb form '{base}', not a participle or a "
-                            "conjugated form.")}
+    return {"prompt": prompt, "choices": list(choices), "answer_index": idx, "explanation": expl}
 
 
 def gen_transitions(rng, difficulty):
