@@ -609,6 +609,7 @@ RELATION_CONNECTORS = {
     "consequence": ["consequently", "therefore", "as a result"],
     "contrast": ["however", "nevertheless", "by contrast"],
     "addition": ["moreover", "furthermore", "likewise"],
+    "concession": ["nevertheless", "even so", "still"],
 }
 TRANSITION_SETS = [
     ("consequence", "The soil in the valley is thin and nutrient-poor",
@@ -643,6 +644,36 @@ TRANSITION_SETS = [
      "two portable classrooms arrived by August"),
     ("contrast", "The recipe uses only pantry staples",
      "shoppers often make special trips for its saffron"),
+]
+
+CONCESSION_SETS = [
+    ("The admission fee is undeniably steep", "the concert sold out within hours"),
+    ("The hike demands eight hours of steady climbing", "families with young children attempt it every weekend"),
+    ("The diner sits well off the main highway", "its booths are full every Sunday morning"),
+    ("The novel runs past six hundred pages", "it reads quickly from the first chapter"),
+    ("The software requires a subscription", "the library offers it free to every cardholder"),
+    ("The theater seats fewer than ninety people", "its productions routinely sell out"),
+    ("The course meets at seven in the morning", "its enrollment list is the longest in the department"),
+    ("The shop closes at three in the afternoon", "customers line up before it opens"),
+]
+
+COLON_ITEMS = [
+    ("The festival imposes one strict requirement on its food vendors",
+     "all ingredients must be sourced within the county"),
+    ("The committee's final report rested on a single conclusion",
+     "the bridge could not be repaired at any reasonable cost"),
+    ("The museum's newest wing was built around one centerpiece",
+     "a restored locomotive from the city's first rail line"),
+    ("The coach's halftime talk conveyed a simple message",
+     "the second half would belong to whoever wanted it more"),
+    ("The scholarship fund honors one core belief",
+     "financial need should never decide who attends college"),
+    ("The town's water ban left residents with one option",
+     "gardens would have to survive on saved rainwater"),
+    ("The expedition carried one non-negotiable rule",
+     "no member ever hiked the final stretch alone"),
+    ("The archive's donation came with a single condition",
+     "the letters would remain sealed until 2050"),
 ]
 
 SYNTHESIS_FACTS = [
@@ -757,18 +788,42 @@ def gen_inferences(rng, difficulty):
 
 
 def gen_sentence_boundaries(rng, difficulty):
-    a, b = rng.choice(BOUNDARY_CLAUSES)
-    b_lower = b[0].lower() + b[1:]
-    correct = f"{a}; {b}."
-    distractors = [f"{a}, {b}.", f"{a} {b}", f"{a}. {b_lower}."]
-    prompt = (f"Which choice correctly joins these two independent clauses into one "
-              f"grammatical sentence?\nClause 1: \"{a}\"\nClause 2: \"{b}\"")
+    if difficulty == "easy":
+        a, b = rng.choice(BOUNDARY_CLAUSES)
+        b_lower = b[0].lower() + b[1:]
+        correct = f"{a}; {b}."
+        distractors = [f"{a}, {b}.", f"{a} {b}", f"{a}. {b_lower}."]
+        prompt = (f"Which choice correctly joins these two independent clauses into one "
+                  f"grammatical sentence?\nClause 1: \"{a}\"\nClause 2: \"{b}\"")
+        expl = ("Two independent clauses cannot be joined by only a comma "
+                "(a comma splice) or by nothing (a fused sentence); a "
+                "semicolon joins them correctly, and a sentence may not "
+                "begin with a lowercase letter.")
+    elif difficulty == "medium":
+        a, b = rng.choice(BOUNDARY_CLAUSES)
+        b_lower = b[0].lower() + b[1:]
+        adverb = rng.choice(["however", "therefore", "moreover"])
+        correct = f"{a}; {adverb}, {b_lower}."
+        distractors = [f"{a}, {adverb}, {b_lower}.", f"{a}; {adverb} {b_lower}.",
+                       f"{a}, {adverb} {b_lower}."]
+        prompt = (f"Which choice correctly joins these two independent clauses into one "
+                  f"grammatical sentence?\nClause 1: \"{a}\"\nClause 2: \"{b}\"")
+        expl = (f"A semicolon may join two independent clauses, and a conjunctive "
+                f"adverb such as '{adverb}' that follows a semicolon needs a comma "
+                f"after it; a comma alone would create a comma splice.")
+    else:
+        intro, rest = rng.choice(COLON_ITEMS)
+        rest_lower = rest[0].lower() + rest[1:]
+        correct = f"{intro}: {rest}."
+        distractors = [f"{intro}; {rest}.", f"{intro}, {rest}.", f"{intro} {rest}."]
+        prompt = (f"Which choice correctly completes the sentence?\n"
+                  f"Sentence: \"{intro} ______\"")
+        expl = (f"A colon correctly introduces the explanation that follows an "
+                f"independent clause; a semicolon would wrongly join a clause to a "
+                f"fragment, and a comma alone is too weak to introduce it.")
     choices, idx = build_choices(rng, correct, distractors)
     return {"prompt": prompt, "choices": list(choices), "answer_index": idx,
-            "explanation": ("Two independent clauses cannot be joined by only a comma "
-                            "(a comma splice) or by nothing (a fused sentence); a "
-                            "semicolon joins them correctly, and a sentence may not "
-                            "begin with a lowercase letter.")}
+            "explanation": expl}
 
 
 def gen_form_structure_sense(rng, difficulty):
@@ -815,27 +870,53 @@ def gen_form_structure_sense(rng, difficulty):
 
 
 def gen_transitions(rng, difficulty):
-    relation, first, second = rng.choice(TRANSITION_SETS)
-    connectors = RELATION_CONNECTORS
-    correct = rng.choice(connectors[relation])
-    other = []
-    for rel, words in connectors.items():
-        if rel != relation:
-            other.extend(words)
-    rng.shuffle(other)
-    distractors = other[:3]
-    prompt = (f"{first.capitalize()}; ______, {second}.\n\nWhich transition best fits "
-              f"the relationship between the two clauses?")
+    if difficulty == "easy":
+        relation, first, second = rng.choice(TRANSITION_SETS)
+        connectors = RELATION_CONNECTORS
+        correct = rng.choice(connectors[relation])
+        other = []
+        for rel, words in connectors.items():
+            if rel != relation:
+                other.extend(words)
+        rng.shuffle(other)
+        distractors = other[:3]
+        prompt = (f"{first.capitalize()}; ______, {second}.\n\nWhich transition best fits "
+                  f"the relationship between the two clauses?")
+        relation_desc = {
+            "consequence": "the second clause is a result of the first",
+            "contrast": "the second clause contrasts with the first",
+            "addition": "the second clause adds related information",
+            "concession": "the second clause holds despite the first",
+        }[relation]
+        expl = (f"{relation_desc.capitalize()}, so a {relation} transition "
+                f"such as '{correct}' is required; the other options signal "
+                "different relationships.")
+    elif difficulty == "medium":
+        first, second = rng.choice(CONCESSION_SETS)
+        second_lower = second[0].lower() + second[1:]
+        correct = rng.choice(["nevertheless", "even so", "still"])
+        distractors = ["therefore", "moreover", "likewise"]
+        prompt = (f"{first.capitalize()}; ______, {second_lower}.\n\nWhich transition "
+                  f"best fits the relationship between the two clauses?")
+        expl = ("The second clause is surprising given the first, so a concession "
+                f"transition such as '{correct}' is required; 'therefore' signals "
+                "result, and 'moreover' and 'likewise' signal addition.")
+    else:
+        # Trap: subordinating conjunctions cannot follow a semicolon
+        first, second = rng.choice(CONCESSION_SETS)
+        second_lower = second[0].lower() + second[1:]
+        correct = "nevertheless"
+        distractors = ["although", "because", "despite"]
+        prompt = (f"{first.capitalize()}; ______, {second_lower}.\n\nWhich transition "
+                  f"best completes the sentence so that it conforms to the "
+                  f"conventions of Standard English?")
+        expl = ("After a semicolon, a conjunctive adverb such as 'nevertheless' is "
+                "required; subordinating conjunctions ('although', 'because') and "
+                "the preposition 'despite' cannot join independent clauses after a "
+                "semicolon.")
     choices, idx = build_choices(rng, correct, distractors)
-    relation_desc = {
-        "consequence": "the second clause is a result of the first",
-        "contrast": "the second clause contrasts with the first",
-        "addition": "the second clause adds related information",
-    }[relation]
     return {"prompt": prompt, "choices": list(choices), "answer_index": idx,
-            "explanation": f"{relation_desc.capitalize()}, so a {relation} transition "
-                           f"such as '{correct}' is required; the other options signal "
-                           "different relationships."}
+            "explanation": expl}
 
 
 def gen_rhetorical_synthesis(rng, difficulty):
@@ -844,25 +925,59 @@ def gen_rhetorical_synthesis(rng, difficulty):
              f"\u2022 Founded: {fact['year1']}\n"
              f"\u2022 First product: {fact['product']}\n"
              f"\u2022 Award won: {fact['award']} in {fact['year2']}")
-    goal = "emphasize recognition of the company"
-    correct = (f"Won the {fact['award']} in {fact['year2']}, {fact['subject']} is "
-               f"recognized for the {fact['product']} it introduced after its "
-               f"founding in {fact['year1']}.")
-    distractors = [
-        f"{fact['subject']} was founded in {fact['year1']} and makes the "
-        f"{fact['product']}.",
-        f"The {fact['product']} made by {fact['subject']} has been produced since "
-        f"{fact['year2']}.",
-        f"Awards such as the {fact['award']} existed well before {fact['year1']}.",
-    ]
+    if difficulty == "easy":
+        goal = "emphasize recognition of the company"
+        correct = (f"Won the {fact['award']} in {fact['year2']}, {fact['subject']} is "
+                   f"recognized for the {fact['product']} it introduced after its "
+                   f"founding in {fact['year1']}.")
+        distractors = [
+            f"{fact['subject']} was founded in {fact['year1']} and makes the "
+            f"{fact['product']}.",
+            f"The {fact['product']} made by {fact['subject']} has been produced since "
+            f"{fact['year2']}.",
+            f"Awards such as the {fact['award']} existed well before {fact['year1']}.",
+        ]
+        expl = ("The goal requires foregrounding the award; only the selected option "
+                "leads with it while keeping the other note facts accurate.")
+    elif difficulty == "medium":
+        goal = "emphasize how long ago the company was founded"
+        correct = (f"Founded in {fact['year1']}, {fact['subject']} introduced the "
+                   f"{fact['product']} and went on to win the {fact['award']} in "
+                   f"{fact['year2']}.")
+        distractors = [
+            f"{fact['subject']} won the {fact['award']} in {fact['year2']} for the "
+            f"{fact['product']}.",
+            f"The {fact['product']} introduced by {fact['subject']} earned the "
+            f"{fact['award']} in {fact['year2']}.",
+            f"The {fact['award']} won by {fact['subject']} in {fact['year2']} "
+            f"recognized the {fact['product']}.",
+        ]
+        expl = ("The goal requires leading with the founding year; the other options "
+                "are factually consistent with the notes but foreground the award or "
+                "product instead of the company's age.")
+    else:
+        goal = ("present the company's recognition as surprising given how recently "
+                "it was founded")
+        correct = (f"Though {fact['subject']} was founded only in {fact['year1']}, by "
+                   f"{fact['year2']} its {fact['product']} had earned the "
+                   f"{fact['award']}.")
+        distractors = [
+            f"{fact['subject']} was founded in {fact['year1']}, and in {fact['year2']} "
+            f"it won the {fact['award']} for its {fact['product']}.",
+            f"The {fact['award']} went to {fact['subject']} in {fact['year2']}; the "
+            f"company was founded in {fact['year1']}.",
+            f"{fact['subject']} introduced the {fact['product']} after {fact['year1']} "
+            f"and won the {fact['award']} in {fact['year2']}.",
+        ]
+        expl = ("The goal requires framing the award as surprising relative to the "
+                "recent founding; only the selected option sets up that contrast "
+                "with 'though', while the other options list the facts neutrally.")
     prompt = (f"While researching a topic, a student has taken the following notes:\n"
               f"{notes}\n\nThe student wants to {goal}. Which choice most effectively "
               f"uses information from the notes to accomplish this goal?")
     choices, idx = build_choices(rng, correct, distractors)
     return {"prompt": prompt, "choices": list(choices), "answer_index": idx,
-            "explanation": ("The goal requires foregrounding the award; only the "
-                            "selected option leads with it while keeping the other "
-                            "note facts accurate.")}
+            "explanation": expl}
 
 
 RW_GENERATORS = {

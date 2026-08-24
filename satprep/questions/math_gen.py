@@ -67,7 +67,17 @@ def gen_linear_eq_1v(rng, difficulty):
 
 
 def gen_linear_functions(rng, difficulty):
-    if difficulty == "hard":
+    fname = rng.choice(["f", "g", "h"])
+    if difficulty == "easy":
+        m = _pick(rng, -6, 6, exclude=(0,))
+        b = _pick(rng, -8, 8)
+        k = _pick(rng, -4, 5)
+        val = m * k + b
+        prompt = f"Let {fname}(x) = {_poly([m, b])}. What is {fname}({k})?"
+        correct = fmt_number(val)
+        distract = [fmt_number(m * b + k), fmt_number(m * k - b), fmt_number(k * (m + b))]
+        expl = (f"Substitute x = {k}: {fname}({k}) = {m}({k}) + ({b}) = {val}.")
+    elif difficulty == "medium":
         x1 = _pick(rng, -5, 5)
         x2 = x1 + _pick(rng, 1, 5)
         m = _pick(rng, -4, 4, exclude=(0,))
@@ -80,38 +90,64 @@ def gen_linear_functions(rng, difficulty):
                     fmt_number(y2 - y1)]
         expl = f"Slope = ({y2} − ({y1})) / ({x2} − ({x1})) = {y2 - y1} / {x2 - x1} = {m}."
     else:
-        m = _pick(rng, -6, 6, exclude=(0,))
+        # Extrapolate: given f at two inputs, find f at a third
+        x1 = _pick(rng, -4, 3)
+        x2 = x1 + _pick(rng, 1, 4)
+        x3 = x2 + _pick(rng, 1, 4)
+        m = _pick(rng, -5, 5, exclude=(0,))
         b = _pick(rng, -8, 8)
-        k = _pick(rng, -4, 5)
-        val = m * k + b
-        fname = rng.choice(["f", "g", "h"])
-        prompt = f"Let {fname}(x) = {_poly([m, b])}. What is {fname}({k})?"
-        correct = fmt_number(val)
-        distract = [fmt_number(m * b + k), fmt_number(m * k - b), fmt_number(k * (m + b))]
-        expl = (f"Substitute x = {k}: {fname}({k}) = {m}({k}) + ({b}) = {val}.")
+        y1, y2, y3 = m * x1 + b, m * x2 + b, m * x3 + b
+        prompt = (f"The function {fname} is linear. If {fname}({x1}) = {y1} and "
+                  f"{fname}({x2}) = {y2}, what is {fname}({x3})?")
+        correct = fmt_number(y3)
+        distract = [fmt_number(y2 + (x3 - x2)), fmt_number(y2 - m * (x3 - x2)),
+                    fmt_number(y1 + m * x3), fmt_number(y3 + 2 * m)]
+        expl = (f"Slope = ({y2} − {y1}) / ({x2} − {x1}) = {m}. Then "
+                f"{fname}({x3}) = {y2} + {m}({x3} − {x2}) = {y3}.")
     choices, idx = build_choices(rng, correct, [d for d in distract])
     return {"prompt": prompt, "choices": list(choices), "answer_index": idx,
             "explanation": expl}
 
 
 def gen_systems_linear(rng, difficulty):
-    span = 4 if difficulty == "easy" else 6
-    xs = _pick(rng, -span, span, exclude=(0,))
-    ys = _pick(rng, -span, span, exclude=(0,))
-    while True:
-        a, b = _pick(rng, -4, 4, exclude=(0,)), _pick(rng, -4, 4, exclude=(0,))
-        c, d = _pick(rng, -4, 4, exclude=(0,)), _pick(rng, -4, 4, exclude=(0,))
-        if a * d - b * c != 0:
-            break
-    e1, e2 = a * xs + b * ys, c * xs + d * ys
-    line1 = f"{a}x {'+' if b >= 0 else '-'} {abs(b)}y = {e1}"
-    line2 = f"{c}x {'+' if d >= 0 else '-'} {abs(d)}y = {e2}"
-    prompt = (f"The system of equations {line1} and {line2} is graphed in the "
-              f"xy-plane. What is the (x, y) solution to the system?")
-    correct = f"({xs}, {ys})"
-    distract = [f"({ys}, {xs})", f"({-xs}, {ys})", f"({xs}, {-ys})", f"({-xs}, {-ys})"]
-    expl = (f"Solving simultaneously gives x = {xs} and y = {ys}; "
-            f"checking: {a}({xs}) {'+' if b >= 0 else '-'} {abs(b)}({ys}) = {e1}.")
+    if difficulty == "hard":
+        # Ask for a combination (x + y or similar), not the ordered pair
+        span = 5
+        xs = _pick(rng, -span, span, exclude=(0,))
+        ys = _pick(rng, -span, span, exclude=(0, xs))
+        while True:
+            a, b = _pick(rng, -5, 5, exclude=(0,)), _pick(rng, -5, 5, exclude=(0,))
+            c, d = _pick(rng, -5, 5, exclude=(0,)), _pick(rng, -5, 5, exclude=(0,))
+            if a * d - b * c != 0:
+                break
+        e1, e2 = a * xs + b * ys, c * xs + d * ys
+        line1 = f"{a}x {'+' if b >= 0 else '-'} {abs(b)}y = {e1}"
+        line2 = f"{c}x {'+' if d >= 0 else '-'} {abs(d)}y = {e2}"
+        target = rng.choice([("x + y", xs + ys), ("x − y", xs - ys)])
+        prompt = (f"In the system {line1} and {line2}, what is the value of "
+                  f"{target[0]}?")
+        correct = str(target[1])
+        distract = [str(xs), str(ys), str(xs * ys), str(-(target[1]))]
+        expl = (f"Solving simultaneously gives x = {xs} and y = {ys}, so "
+                f"{target[0]} = {target[1]}.")
+    else:
+        span = 4 if difficulty == "easy" else 6
+        xs = _pick(rng, -span, span, exclude=(0,))
+        ys = _pick(rng, -span, span, exclude=(0,))
+        while True:
+            a, b = _pick(rng, -4, 4, exclude=(0,)), _pick(rng, -4, 4, exclude=(0,))
+            c, d = _pick(rng, -4, 4, exclude=(0,)), _pick(rng, -4, 4, exclude=(0,))
+            if a * d - b * c != 0:
+                break
+        e1, e2 = a * xs + b * ys, c * xs + d * ys
+        line1 = f"{a}x {'+' if b >= 0 else '-'} {abs(b)}y = {e1}"
+        line2 = f"{c}x {'+' if d >= 0 else '-'} {abs(d)}y = {e2}"
+        prompt = (f"The system of equations {line1} and {line2} is graphed in the "
+                  f"xy-plane. What is the (x, y) solution to the system?")
+        correct = f"({xs}, {ys})"
+        distract = [f"({ys}, {xs})", f"({-xs}, {ys})", f"({xs}, {-ys})", f"({-xs}, {-ys})"]
+        expl = (f"Solving simultaneously gives x = {xs} and y = {ys}; "
+                f"checking: {a}({xs}) {'+' if b >= 0 else '-'} {abs(b)}({ys}) = {e1}.")
     choices, idx = build_choices(rng, correct, distract)
     return {"prompt": prompt, "choices": list(choices), "answer_index": idx,
             "explanation": expl}
@@ -169,18 +205,35 @@ def gen_linear_word_problems(rng, difficulty):
         distract = [n + 1, n - 1, round(total / rate), n + 2]
         expl = (f"Total cost = {fee} + {rate}n = {total}, so {rate}n = {total - fee} "
                 f"and n = {ans}.")
-    else:
+        correct = ans
+    elif difficulty == "medium":
         n = _pick(rng, 4, 14)
         total = fee + rate * n
         prompt = (f"A service charges a one-time signup fee of {sym}{fee} plus "
                   f"{sym}{rate} per session. A customer spent a total of {sym}{total}. "
                   f"How many paid sessions did the customer attend?")
-        ans = str(n)
+        correct = str(n) + " sessions"
         distract = [round(total / rate), n - 1, n + 2, round((total - fee) / rate) + 1]
+        distract = [d + " sessions" for d in map(str, distract)]
         expl = (f"{fee} + {rate}n = {total} gives {rate}n = {total - fee}, "
                 f"so n = {total - fee} ÷ {rate} = {n}.")
-    correct = ans + (" sessions" if difficulty != "easy" else "")
-    distract = [d + (" sessions" if difficulty != "easy" else "") for d in map(str, distract)]
+    else:
+        # Two-plan comparison: after how many sessions do plans cost the same?
+        rate_a = _pick(rng, 6, 12)
+        rate_b = _pick(rng, 3, rate_a - 2)
+        n_eq = _pick(rng, 4, 12)
+        fee_a = _pick(rng, 10, 40)
+        fee_b = fee_a + (rate_a - rate_b) * n_eq
+        prompt = (f"Plan A charges a {sym}{fee_a} signup fee plus {sym}{rate_a} per "
+                  f"session. Plan B charges a {sym}{fee_b} signup fee plus "
+                  f"{sym}{rate_b} per session. After how many sessions do the two "
+                  f"plans cost the same amount?")
+        correct = f"{n_eq} sessions"
+        distract = [n_eq - 1, n_eq + 1, n_eq + 2, max(2, n_eq - 2)]
+        distract = [str(d) + " sessions" for d in distract]
+        expl = (f"{fee_a} + {rate_a}n = {fee_b} + {rate_b}n gives "
+                f"{rate_a - rate_b}n = {fee_b - fee_a}, so n = {fee_b - fee_a} ÷ "
+                f"{rate_a - rate_b} = {n_eq}.")
     choices, idx = build_choices(rng, correct, distract)
     return {"prompt": prompt, "choices": list(choices), "answer_index": idx,
             "explanation": expl}
@@ -350,20 +403,54 @@ def gen_nonlinear_equations(rng, difficulty):
 
 
 def gen_nonlinear_systems(rng, difficulty):
-    t1 = _pick(rng, -4, 2)
-    t2 = t1 + _pick(rng, 1, 5)
-    c = _pick(rng, -5, 5)
-    m = t1 + t2
-    k = c - t1 * t2
-    y1, y2 = t1 * t1 + c, t2 * t2 + c
-    prompt = (f"The equations y = x\u00b2 + {c} and y = {m}x {'+' if k >= 0 else '-'} "
-              f"{abs(k)} are graphed in the xy-plane. The graphs intersect at two "
-              f"points. What is the y-coordinate of the point of intersection with "
-              f"the greater x-coordinate?")
-    correct = str(y2)
-    distract = [y1, t2, y2 - y1 if y2 != y1 else y2 + 1, t2 * t2 - c]
-    expl = (f"Set x\u00b2 + {c} = {m}x {'+' if k >= 0 else '-'} {abs(k)}, which factors "
-            f"as (x - {t1})(x - {t2}) = 0. At x = {t2}: y = {t2}\u00b2 + {c} = {y2}.")
+    if difficulty == "easy":
+        t1 = _pick(rng, -2, 1)
+        t2 = t1 + _pick(rng, 1, 3)
+        c = _pick(rng, -3, 3)
+        m = t1 + t2
+        k = c - t1 * t2
+        y1, y2 = t1 * t1 + c, t2 * t2 + c
+        prompt = (f"The equations y = x\u00b2 + {c} and y = {m}x {'+' if k >= 0 else '-'} "
+                  f"{abs(k)} are graphed in the xy-plane. The graphs intersect at two "
+                  f"points. What is the y-coordinate of the point of intersection with "
+                  f"the greater x-coordinate?")
+        correct = str(y2)
+        distract = [y1, t2, y2 - y1 if y2 != y1 else y2 + 1, t2 * t2 - c]
+        expl = (f"Set x\u00b2 + {c} = {m}x {'+' if k >= 0 else '-'} {abs(k)}, which factors "
+                f"as (x - {t1})(x - {t2}) = 0. At x = {t2}: y = {t2}\u00b2 + {c} = {y2}.")
+    elif difficulty == "medium":
+        t1 = _pick(rng, -4, 2)
+        t2 = t1 + _pick(rng, 1, 5)
+        c = _pick(rng, -5, 5)
+        m = t1 + t2
+        k = c - t1 * t2
+        y1, y2 = t1 * t1 + c, t2 * t2 + c
+        prompt = (f"The equations y = x\u00b2 + {c} and y = {m}x {'+' if k >= 0 else '-'} "
+                  f"{abs(k)} are graphed in the xy-plane. The graphs intersect at two "
+                  f"points. What is the y-coordinate of the point of intersection with "
+                  f"the greater x-coordinate?")
+        correct = str(y2)
+        distract = [y1, t2, y2 - y1 if y2 != y1 else y2 + 1, t2 * t2 - c]
+        expl = (f"Set x\u00b2 + {c} = {m}x {'+' if k >= 0 else '-'} {abs(k)}, which factors "
+                f"as (x - {t1})(x - {t2}) = 0. At x = {t2}: y = {t2}\u00b2 + {c} = {y2}.")
+    else:
+        # Sum of both y-coordinates: requires finding both intersections
+        t1 = _pick(rng, -4, 2)
+        t2 = t1 + _pick(rng, 2, 5)
+        c = _pick(rng, -5, 5)
+        m = t1 + t2
+        k = c - t1 * t2
+        y1, y2 = t1 * t1 + c, t2 * t2 + c
+        total_y = y1 + y2
+        prompt = (f"The equations y = x\u00b2 + {c} and y = {m}x {'+' if k >= 0 else '-'} "
+                  f"{abs(k)} are graphed in the xy-plane. The graphs intersect at two "
+                  f"points. What is the sum of the y-coordinates of the two points of "
+                  f"intersection?")
+        correct = str(total_y)
+        distract = [y2, y1, t1 + t2, total_y - c]
+        expl = (f"Set x\u00b2 + {c} = {m}x {'+' if k >= 0 else '-'} {abs(k)}, which factors "
+                f"as (x - {t1})(x - {t2}) = 0, so x = {t1} or {t2}. The y-values are "
+                f"{y1} and {y2}, and their sum is {total_y}.")
     choices, idx = build_choices(rng, correct, [str(d) for d in distract])
     return {"prompt": prompt, "choices": list(choices), "answer_index": idx,
             "explanation": expl}
@@ -380,7 +467,7 @@ def gen_nonlinear_functions(rng, difficulty):
         distract = [fmt_number(k * k + b + c), fmt_number(k * (k + b)), fmt_number(val + 2),
                     fmt_number(-(val))]
         expl = (f"f({k}) = ({k})\u00b2 + ({b})({k}) + {c} = {k * k} + {b * k} + {c} = {val}.")
-    else:
+    elif difficulty == "medium":
         h = _pick(rng, -5, 5, exclude=(0,))
         kk = _pick(rng, -6, 6)
         a = _pick(rng, 1, 3)
@@ -391,25 +478,74 @@ def gen_nonlinear_functions(rng, difficulty):
         distract = [f"({-h}, {kk})", f"({h}, {-kk})", f"({kk}, {h})", f"({-h}, {-kk})"]
         expl = (f"For f(x) = a(x - h)\u00b2 + k the vertex is (h, k), here "
                 f"({h}, {kk}).")
+    else:
+        # Vertex from standard form: requires x = -b/(2a)
+        a = _pick(rng, 1, 3)
+        h = _pick(rng, -5, 5, exclude=(0,))
+        b = -2 * a * h
+        kk = _pick(rng, -6, 6)
+        prompt = (f"The function f(x) = {a}x\u00b2 {'+' if b >= 0 else '-'} "
+                  f"{abs(b)}x {'+' if kk >= 0 else '-'} {abs(kk)} is graphed in the "
+                  f"xy-plane. What is the vertex of the graph?")
+        correct = f"({h}, {kk})"
+        distract = [f"({-h}, {kk})", f"({h}, {-kk})", f"({-h}, {-kk})", f"({kk}, {h})"]
+        expl = (f"The x-coordinate of the vertex is -b/(2a) = {-b}/{2 * a} = {h}. "
+                f"Then f({h}) = {a}({h})\u00b2 {'+' if b >= 0 else '-'} {abs(b)}({h}) "
+                f"{'+' if kk >= 0 else '-'} {abs(kk)} = {kk}, so the vertex is "
+                f"({h}, {kk}).")
     choices, idx = build_choices(rng, correct, [d for d in distract])
     return {"prompt": prompt, "choices": list(choices), "answer_index": idx,
             "explanation": expl}
 
 
 def gen_ratios_rates(rng, difficulty):
-    a = _pick(rng, 2, 7)
-    b = _pick(rng, 2, 7, exclude=(a,))
-    scale = _pick(rng, 2, 6)
-    amt_a = a * scale
-    amt_b = b * scale
-    ing_a, ing_b = rng.sample(["flour", "sugar", "oats", "honey", "milk"], 2)
-    prompt = (f"A recipe uses {a} cups of {ing_a} for every {b} cups of {ing_b}. "
-              f"If a baker uses {amt_a} cups of {ing_a}, how many cups of {ing_b} "
-              f"are needed?")
-    correct = str(amt_b)
-    distract = [amt_a, amt_b + b, scale, amt_b + 2]
-    expl = (f"{amt_a} \u00f7 {a} = {scale} batches, so {ing_b} needed = {b} \u00d7 "
-            f"{scale} = {amt_b}.")
+    if difficulty == "easy":
+        a = _pick(rng, 2, 7)
+        b = _pick(rng, 2, 7, exclude=(a,))
+        scale = _pick(rng, 2, 6)
+        amt_a = a * scale
+        amt_b = b * scale
+        ing_a, ing_b = rng.sample(["flour", "sugar", "oats", "honey", "milk"], 2)
+        prompt = (f"A recipe uses {a} cups of {ing_a} for every {b} cups of {ing_b}. "
+                  f"If a baker uses {amt_a} cups of {ing_a}, how many cups of {ing_b} "
+                  f"are needed?")
+        correct = str(amt_b)
+        distract = [amt_a, amt_b + b, scale, amt_b + 2]
+        expl = (f"{amt_a} \u00f7 {a} = {scale} batches, so {ing_b} needed = {b} \u00d7 "
+                f"{scale} = {amt_b}.")
+    elif difficulty == "medium":
+        # Constant rate: find distance at a second quantity
+        mpg = _pick(rng, 15, 40, exclude=(0,))
+        g1 = _pick(rng, 4, 8)
+        g2 = g1 + _pick(rng, 2, 5)
+        miles1 = mpg * g1
+        miles2 = mpg * g2
+        prompt = (f"A car travels {miles1} miles on {g1} gallons of gasoline. At the "
+                  f"same rate, how many miles can the car travel on {g2} gallons?")
+        correct = str(miles2)
+        distract = [miles1, miles2 + mpg, miles2 - mpg, mpg * g1 * g2 // max(g1 + g2, 1)]
+        expl = (f"Rate = {miles1} \u00f7 {g1} = {mpg} miles per gallon. On {g2} "
+                f"gallons: {mpg} \u00d7 {g2} = {miles2} miles.")
+    else:
+        # Combined work rates
+        r_a = _pick(rng, 15, 40)
+        r_b = _pick(rng, 15, 40)
+        t_a = _pick(rng, 3, 6)
+        t_b = _pick(rng, 4, 8)
+        parts_a, parts_b = r_a * t_a, r_b * t_b
+        t_tot = _pick(rng, 5, 9)
+        combined = r_a + r_b
+        total = combined * t_tot
+        unit = rng.choice(["widgets", "parts", "cards"])
+        prompt = (f"Machine A assembles {parts_a} {unit} in {t_a} minutes, and "
+                  f"Machine B assembles {parts_b} {unit} in {t_b} minutes. Working "
+                  f"together at these rates, how many {unit} can the two machines "
+                  f"assemble in {t_tot} minutes?")
+        correct = str(total)
+        distract = [parts_a + parts_b, r_a * t_tot, r_b * t_tot, total + combined]
+        expl = (f"Machine A: {parts_a} \u00f7 {t_a} = {r_a} per minute; Machine B: "
+                f"{parts_b} \u00f7 {t_b} = {r_b} per minute. Together: {combined} per "
+                f"minute \u00d7 {t_tot} minutes = {total}.")
     choices, idx = build_choices(rng, correct, [str(d) for d in distract])
     return {"prompt": prompt, "choices": list(choices), "answer_index": idx,
             "explanation": expl}
@@ -556,22 +692,34 @@ def gen_probability(rng, difficulty):
 def gen_inference_studies(rng, difficulty):
     pct = rng.randrange(38, 72, 2)
     moe = rng.choice([2, 3, 4])
-    correct = (f"It is plausible that between {pct - moe}% and {pct + moe}% of all "
-               f"voters in the county support the proposal")
-    distract = [f"Exactly {pct}% of all voters support the proposal",
-                f"No more than {pct - moe}% of all voters support the proposal",
-                f"At least {pct + moe}% of all voters support the proposal",
-                rng.choice(["The sampling was flawed, so no conclusion can be drawn",
-                            "The survey proves that a majority of every age group "
-                            "supports the proposal"])]
     if difficulty == "hard":
-        distract.append("The margin of error applies only to people who did not respond")
-    prompt = (f"A survey of a random sample of voters in a county found that {pct}% "
-              f"support a proposal, with a margin of error of \u00b1{moe} percentage "
-              f"points. Which conclusion is most supported by the survey results?")
-    expl = (f"A margin of error of \u00b1{moe} points means the true population value "
-            f"most plausibly lies between {pct - moe}% and {pct + moe}%; sample results "
-            f"do not pin down an exact value.")
+        # Reverse reasoning: identify the value OUTSIDE the interval
+        outside = pct + moe + rng.choice([2, 3, 4])
+        prompt = (f"A survey of a random sample of voters in a county found that "
+                  f"{pct}% support a proposal, with a margin of error of \u00b1{moe} "
+                  f"percentage points. Which of the following is NOT a plausible "
+                  f"value for the percentage of all voters in the county who support "
+                  f"the proposal?")
+        correct = f"{outside}%"
+        distract = [f"{pct}%", f"{pct - moe}%", f"{pct + moe}%"]
+        expl = (f"The margin of error gives a plausible range of {pct - moe}% to "
+                f"{pct + moe}%. The value {outside}% falls outside that range, so it "
+                f"is not plausible.")
+    else:
+        correct = (f"It is plausible that between {pct - moe}% and {pct + moe}% of all "
+                   f"voters in the county support the proposal")
+        distract = [f"Exactly {pct}% of all voters support the proposal",
+                    f"No more than {pct - moe}% of all voters support the proposal",
+                    f"At least {pct + moe}% of all voters support the proposal",
+                    rng.choice(["The sampling was flawed, so no conclusion can be drawn",
+                                "The survey proves that a majority of every age group "
+                                "supports the proposal"])]
+        prompt = (f"A survey of a random sample of voters in a county found that {pct}% "
+                  f"support a proposal, with a margin of error of \u00b1{moe} percentage "
+                  f"points. Which conclusion is most supported by the survey results?")
+        expl = (f"A margin of error of \u00b1{moe} points means the true population value "
+                f"most plausibly lies between {pct - moe}% and {pct + moe}%; sample results "
+                f"do not pin down an exact value.")
     choices, idx = build_choices(rng, correct, distract)
     return {"prompt": prompt, "choices": list(choices), "answer_index": idx,
             "explanation": expl}
@@ -698,33 +846,60 @@ def gen_lines_angles_triangles(rng, difficulty):
 
 
 def gen_right_triangles_trig(rng, difficulty):
-    trip = rng.choice(TRIPLES)
-    k = rng.randint(1, 3) if difficulty == "easy" else rng.randint(1, 4)
-    opp, adj, hyp = trip[0] * k, trip[1] * k, trip[2] * k
-    funcs = [("sin", opp, hyp), ("cos", adj, hyp), ("tan", opp, adj)]
-    name, side, ref = rng.choice(funcs)
-    frac = Fraction(side, ref)
-    correct = f"{frac.numerator}/{frac.denominator}"
-    prompt = (f"In a right triangle with legs {opp} and {adj} and hypotenuse "
-              f"{hyp}, what is {name} of the angle opposite the leg of length "
-              f"{opp}?")
-    if name == "sin":
-        distract = [f"{adj}/{hyp}", f"{opp}/{adj}", f"{hyp}/{opp}", f"{adj}/{opp}"]
-        expl = f"sin = opposite/hypotenuse = {opp}/{hyp}."
-    elif name == "cos":
-        distract = [f"{opp}/{hyp}", f"{adj}/{opp}", f"{hyp}/{adj}", f"{opp}/{adj}"]
-        expl = f"cos = adjacent/hypotenuse = {adj}/{hyp}."
+    if difficulty == "hard":
+        # Solve for a side given a trig ratio (reverse SOH-CAH-TOA)
+        trip = rng.choice(TRIPLES)
+        m = _pick(rng, 2, 6)
+        opp, adj, hyp = trip[0] * m, trip[1] * m, trip[2] * m
+        name = rng.choice(["sin", "tan"])
+        if name == "sin":
+            ratio = Fraction(trip[0], trip[2])
+            prompt = (f"In a right triangle, sin of one acute angle is "
+                      f"{ratio.numerator}/{ratio.denominator}. If the hypotenuse is "
+                      f"{hyp}, what is the length of the side opposite that angle?")
+            correct = str(opp)
+            distract = [str(adj), str(hyp - opp), str(opp + m), str(hyp - adj)]
+            expl = (f"sin = opposite/hypotenuse, so opposite = sin \u00d7 hypotenuse = "
+                    f"{ratio.numerator}/{ratio.denominator} \u00d7 {hyp} = {opp}.")
+        else:
+            ratio = Fraction(trip[0], trip[1])
+            prompt = (f"In a right triangle, tan of one acute angle is "
+                      f"{ratio.numerator}/{ratio.denominator}. If the side adjacent to "
+                      f"that angle is {adj}, what is the length of the side opposite "
+                      f"the angle?")
+            correct = str(opp)
+            distract = [str(adj), str(hyp), str(opp + m), str(adj - trip[0])]
+            expl = (f"tan = opposite/adjacent, so opposite = tan \u00d7 adjacent = "
+                    f"{ratio.numerator}/{ratio.denominator} \u00d7 {adj} = {opp}.")
     else:
-        distract = [f"{adj}/{opp}", f"{opp}/{hyp}", f"{hyp}/{adj}", f"{adj}/{hyp}"]
-        expl = f"tan = opposite/adjacent = {opp}/{adj}."
-    fracs = []
-    for d in distract:
-        try:
-            f = Fraction(d)
-            fracs.append(f"{f.numerator}/{f.denominator}")
-        except (ValueError, ZeroDivisionError):
-            fracs.append(d)
-    choices, idx = build_choices(rng, correct, fracs)
+        trip = rng.choice(TRIPLES)
+        k = rng.randint(1, 3) if difficulty == "easy" else rng.randint(1, 4)
+        opp, adj, hyp = trip[0] * k, trip[1] * k, trip[2] * k
+        funcs = [("sin", opp, hyp), ("cos", adj, hyp), ("tan", opp, adj)]
+        name, side, ref = rng.choice(funcs)
+        frac = Fraction(side, ref)
+        correct = f"{frac.numerator}/{frac.denominator}"
+        prompt = (f"In a right triangle with legs {opp} and {adj} and hypotenuse "
+                  f"{hyp}, what is {name} of the angle opposite the leg of length "
+                  f"{opp}?")
+        if name == "sin":
+            distract = [f"{adj}/{hyp}", f"{opp}/{adj}", f"{hyp}/{opp}", f"{adj}/{opp}"]
+            expl = f"sin = opposite/hypotenuse = {opp}/{hyp}."
+        elif name == "cos":
+            distract = [f"{opp}/{hyp}", f"{adj}/{opp}", f"{hyp}/{adj}", f"{opp}/{adj}"]
+            expl = f"cos = adjacent/hypotenuse = {adj}/{hyp}."
+        else:
+            distract = [f"{adj}/{opp}", f"{opp}/{hyp}", f"{hyp}/{adj}", f"{adj}/{hyp}"]
+            expl = f"tan = opposite/adjacent = {opp}/{adj}."
+        fracs = []
+        for d in distract:
+            try:
+                f = Fraction(d)
+                fracs.append(f"{f.numerator}/{f.denominator}")
+            except (ValueError, ZeroDivisionError):
+                fracs.append(d)
+        distract = fracs
+    choices, idx = build_choices(rng, correct, distract)
     return {"prompt": prompt, "choices": list(choices), "answer_index": idx,
             "explanation": expl}
 
@@ -749,7 +924,7 @@ def gen_circles(rng, difficulty):
             distract = [f"{area_coef}\u03c0", f"{circ_coef + 2}\u03c0", f"{r}\u03c0",
                         f"{2 * area_coef}\u03c0"]
             expl = f"Circumference = 2\u03c0r = 2\u03c0({r}) = {circ_coef}\u03c0."
-    else:
+    elif difficulty == "medium":
         r2 = r * r
         prompt = (f"The circle (x {'-' if h >= 0 else '+'} {abs(h)})\u00b2 + "
                   f"(y {'-' if k >= 0 else '+'} {abs(k)})\u00b2 = {r2} is graphed in "
@@ -757,6 +932,21 @@ def gen_circles(rng, difficulty):
         correct = str(r)
         distract = [str(r2), str(2 * r), str(r + 1), str(max(abs(h), abs(k)))]
         expl = f"The right-hand side is r\u00b2 = {r2}, so r = \u221a{r2} = {r}."
+    else:
+        # Radius from expanded equation: requires completing the square
+        r2 = r * r
+        d_coef = -2 * h
+        e_coef = -2 * k
+        f_coef = h * h + k * k - r2
+        prompt = (f"The circle x\u00b2 + y\u00b2 {'+' if d_coef >= 0 else '-'} "
+                  f"{abs(d_coef)}x {'+' if e_coef >= 0 else '-'} {abs(e_coef)}y "
+                  f"{'+' if f_coef >= 0 else '-'} {abs(f_coef)} = 0 is graphed in the "
+                  f"xy-plane. What is the radius of the circle?")
+        correct = str(r)
+        distract = [str(r2), str(2 * r), str(abs(d_coef) // 2 or 1), str(r + 1)]
+        expl = (f"Complete the square: (x {'-' if h >= 0 else '+'} {abs(h)})\u00b2 + "
+                f"(y {'-' if k >= 0 else '+'} {abs(k)})\u00b2 = {r2}, so r = "
+                f"\u221a{r2} = {r}.")
     choices, idx = build_choices(rng, correct, [d for d in distract])
     return {"prompt": prompt, "choices": list(choices), "answer_index": idx,
             "explanation": expl}
