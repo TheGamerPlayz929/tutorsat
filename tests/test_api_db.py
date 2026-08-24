@@ -90,7 +90,8 @@ class TestApi(unittest.TestCase):
         port = sock.getsockname()[1]
         sock.close()
         cls.port = port
-        cls.app = AppState(db_path=":memory:")
+        cls.app = AppState(db_path=":memory:",
+                           allowed_origins={"https://tutorsat.web.app"})
         Handler.app = cls.app
         from http.server import ThreadingHTTPServer
         cls.server = ThreadingHTTPServer(("127.0.0.1", port), Handler)
@@ -130,6 +131,23 @@ class TestApi(unittest.TestCase):
         status, payload = self.request("GET", "/api/health")
         self.assertEqual(status, 200)
         self.assertEqual(payload, {"status": "ok"})
+
+    def test_cors_preflight_when_origin_allowed(self):
+        import urllib.request
+        req = urllib.request.Request(
+            self.base + "/api/auth/google", method="OPTIONS")
+        req.add_header("Origin", "https://tutorsat.web.app")
+        req.add_header("Access-Control-Request-Method", "POST")
+        req.add_header("Access-Control-Request-Headers", "content-type")
+        try:
+            resp = urllib.request.urlopen(req, timeout=10)
+            status = resp.status
+            acao = resp.headers.get("Access-Control-Allow-Origin")
+        except urllib.error.HTTPError as e:
+            status = e.code
+            acao = None
+        self.assertEqual(status, 204)
+        self.assertEqual(acao, "https://tutorsat.web.app")
 
     def test_practice_flow_end_to_end(self):
         uid = self._make_user()

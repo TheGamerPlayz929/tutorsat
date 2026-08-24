@@ -1022,6 +1022,9 @@ class Handler(BaseHTTPRequestHandler):
     def do_DELETE(self):
         self._dispatch("DELETE")
 
+    def do_OPTIONS(self):
+        self._dispatch("OPTIONS")
+
 
 def serve(host="127.0.0.1", port=8765, db_path="satprep.db",
           google_client_id=None, allowed_origins="",
