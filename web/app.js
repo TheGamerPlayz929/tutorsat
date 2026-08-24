@@ -270,6 +270,12 @@ function fmtTheta(theta, sd) {
   return sd != null ? `${t} ± ${sd.toFixed(2)}` : t;
 }
 
+function thetaMove(thetaBefore, thetaAfter) {
+  const before = fmtTheta(thetaBefore);
+  const after = fmtTheta(thetaAfter);
+  return `${before} → ${after}`;
+}
+
 function calItem(label, valueHtml, optional) {
   return `<span class="cal-item${optional ? " cal-optional" : ""}">` +
     `${label}&nbsp;<b>${valueHtml}</b></span>`;
