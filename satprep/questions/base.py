@@ -5,7 +5,7 @@ from typing import Tuple
 B_RANGES = {
     "easy": (-2.0, -0.7),
     "medium": (-0.5, 0.6),
-    "hard": (0.8, 2.2),
+    "hard": (1.5, 3.5),
 }
 A_RANGE = (1.0, 1.6)
 

@@ -154,6 +154,7 @@ DIFFICULTY_PROFILES = {
     "balanced": {EASY: 0.30, MEDIUM: 0.45, HARD: 0.25},
     "easy_leaning": {EASY: 0.55, MEDIUM: 0.40, HARD: 0.05},
     "hard_leaning": {EASY: 0.05, MEDIUM: 0.35, HARD: 0.60},
+    "expert": {EASY: 0.0, MEDIUM: 0.0, HARD: 1.0},
 }
 DEFAULT_PROFILE = "balanced"
 

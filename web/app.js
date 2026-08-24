@@ -446,7 +446,7 @@ function domainShort(domainId) {
 
 function profileLabel(profile) {
   return { easy_leaning: "Easier", balanced: "Standard",
-           hard_leaning: "Harder" }[profile] || profile;
+           hard_leaning: "Harder", expert: "Expert" }[profile] || profile;
 }
 
 function scaleBandHTML(low, high, compact) {
@@ -777,7 +777,7 @@ async function hydrateHome() {
 
 /* ---------------- practice setup ---------------- */
 
-let practiceConfig = { section: "mixed", length: 10, skills: new Set() };
+let practiceConfig = { section: "mixed", length: 10, skills: new Set(), profile: "balanced" };
 
 function skillList() {
   const out = [];
@@ -810,6 +810,14 @@ function renderPracticeSetup() {
           <span class="mono" id="len-label">${practiceConfig.length}</span></label>
         <input type="range" id="cfg-length" min="4" max="30" step="1"
                value="${practiceConfig.length}">
+      </div>
+      <div class="field">
+        <label for="cfg-profile">Difficulty profile</label>
+        <select id="cfg-profile">
+          <option value="balanced">Standard (mix of easy/medium/hard)</option>
+          <option value="hard_leaning">Harder (mostly hard)</option>
+          <option value="expert">Expert (100% hard)</option>
+        </select>
       </div>
       <div class="field">
         <label>Focus skills: optional; empty draws the full blueprint mix</label>
@@ -845,6 +853,11 @@ function renderPracticeSetup() {
   sectionSel.addEventListener("change", (e) => {
     practiceConfig.section = e.target.value;
   });
+  const profileSel = document.getElementById("cfg-profile");
+  profileSel.value = practiceConfig.profile;
+  profileSel.addEventListener("change", (e) => {
+    practiceConfig.profile = e.target.value;
+  });
   document.getElementById("cfg-length").addEventListener("input", (e) => {
     practiceConfig.length = parseInt(e.target.value, 10);
     document.getElementById("len-label").textContent = e.target.value;
@@ -856,6 +869,7 @@ function renderPracticeSetup() {
         section: practiceConfig.section === "mixed" ? null : practiceConfig.section,
         length: practiceConfig.length,
         skills: practiceConfig.skills.size ? [...practiceConfig.skills] : null,
+        profile: practiceConfig.profile,
       };
       if (state.x) {
         const p = await xApi("/api/x/practice/start", body);
