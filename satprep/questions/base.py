@@ -2,17 +2,22 @@ from dataclasses import asdict, dataclass
 from fractions import Fraction
 from typing import Tuple
 
-B_RANGES = {
-    "easy": (-0.5, 0.6),     # was medium
-    "medium": (1.5, 3.5),    # was hard (new harder variant)
-    "hard": (3.5, 5.5),      # NEW: extreme, beyond C2
-}
-A_RANGE = (1.0, 1.6)
+# Single prior for all items - difficulty string controls content only, not b-parameter
+B_PRIOR_MEAN = 0.0
+B_PRIOR_SD = 1.0
+A_RANGE = (0.8, 1.2)
 
 
 def draw_irt_params(rng, difficulty: str) -> Tuple[float, float]:
-    lo, hi = B_RANGES[difficulty]
-    return rng.uniform(*A_RANGE), rng.uniform(lo, hi)
+    """Draw IRT parameters from single prior.
+    
+    Args:
+        rng: Random number generator
+        difficulty: Content difficulty tier (controls question content, NOT b-parameter)
+    """
+    b = rng.gauss(B_PRIOR_MEAN, B_PRIOR_SD)
+    a = rng.uniform(*A_RANGE)
+    return a, b
 
 
 def fmt_number(value) -> str:

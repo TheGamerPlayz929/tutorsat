@@ -53,22 +53,20 @@ class TestGeneratedQuestions(unittest.TestCase):
         other = QuestionBank(master_seed=778).make(cell, item_seq=5)
         self.assertNotEqual(qa.prompt + qa.choices[0], other.prompt + other.choices[0])
 
-    def test_difficulty_bands_map_to_b_values(self):
-        from satprep.questions.base import B_RANGES
+    def test_single_prior_for_all_difficulties(self):
+        from satprep.questions.base import B_PRIOR_MEAN, B_PRIOR_SD, A_RANGE
         bank = QuestionBank(master_seed=99)
         seq = 0
-        seen = {}
         for difficulty in DIFFICULTIES:
-            lo, hi = B_RANGES[difficulty]
             for _ in range(30):
                 cell = ("algebra", "linear_functions", difficulty)
                 q = bank.make(cell, item_seq=seq)
                 seq += 1
-                self.assertGreaterEqual(q.b, lo - 1e-9)
-                self.assertLessEqual(q.b, hi + 1e-9)
-                self.assertGreaterEqual(q.a, 0.5)
-                seen[difficulty] = True
-        self.assertEqual(set(seen), set(DIFFICULTIES))
+                # All difficulties now use the same prior for b
+                self.assertGreaterEqual(q.b, B_PRIOR_MEAN - 5 * B_PRIOR_SD)
+                self.assertLessEqual(q.b, B_PRIOR_MEAN + 5 * B_PRIOR_SD)
+                self.assertGreaterEqual(q.a, A_RANGE[0] - 1e-9)
+                self.assertLessEqual(q.a, A_RANGE[1] + 1e-9)
 
 
 class TestBankFillsBlueprints(unittest.TestCase):

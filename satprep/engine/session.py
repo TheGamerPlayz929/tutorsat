@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from typing import Dict, List, Optional
+import random
 
 from ..core.ability import LearnerModel, SkillState, fisher_information
 from ..core.blueprint import BlueprintModel
@@ -24,14 +25,22 @@ class PracticeSession:
     information at the current per-skill theta is highest (ties broken by
     original blueprint order), which concentrates difficulty near the learner's
     estimated ability - a lightweight computerized-adaptive-testing policy.
+
+    Cold-start exploration: for items with < 30 responses (uncalibrated),
+    adds exploration noise to prevent clustering and ensure tail coverage.
     """
+
+    EXPLORATION_RATE = 0.3  # probability of exploring for uncalibrated items
+    CALIBRATION_THRESHOLD = 30
 
     def __init__(self, user_id: str = "anon", section: Optional[str] = None,
                  length: int = 10, skills=None, seed=None,
                  learner: Optional[LearnerModel] = None,
                  model: Optional[BlueprintModel] = None,
                  bank: Optional[QuestionBank] = None,
-                 profile: str = DEFAULT_PROFILE):
+                 profile: str = DEFAULT_PROFILE,
+                 calibration_info: Optional[Dict[str, int]] = None,
+                 rng: Optional[random.Random] = None):
         self.user_id = user_id
         self.section = section
         self.length = length
@@ -40,6 +49,10 @@ class PracticeSession:
         self.model = model or BlueprintModel()
         self.bank = bank or QuestionBank(master_seed=self.seed)
         self.learner = learner or LearnerModel()
+
+        # calibration_info: {question_id: response_count} for cold-start exploration
+        self.calibration_info = calibration_info or {}
+        self.rng = rng or random.Random(self.seed)
 
         self.blueprint = self.model.draw(
             length, section=section, skill_ids=skills, profile=profile, seed=self.seed)
@@ -57,10 +70,27 @@ class PracticeSession:
         st: SkillState = self.learner.state(skill_id)
         return st.theta
 
+    def _is_calibrated(self, question_id: str) -> bool:
+        """Check if an item has reached calibration threshold."""
+        return self.calibration_info.get(question_id, 0) >= self.CALIBRATION_THRESHOLD
+
+    def _exploration_score(self, q: Question, theta: float) -> float:
+        """Add exploration noise for uncalibrated items to prevent clustering."""
+        base_info = fisher_information(q.a, q.b, theta)
+        if self._is_calibrated(q.question_id):
+            return base_info
+        # For uncalibrated items, mix in exploration
+        if self.rng.random() < self.EXPLORATION_RATE:
+            # Add noise proportional to base info to encourage spread
+            noise = self.rng.uniform(0, base_info * 2) if base_info > 0 else self.rng.uniform(0, 1)
+            return base_info + noise
+        return base_info
+
     def next_question(self) -> Optional[Question]:
         """Serve the max-information unanswered item given current ability.
 
         Idempotent: returns the pending question until it is answered.
+        Cold-start exploration: uncalibrated items get exploration noise.
         """
         if self._pending_index is not None:
             return self.questions[self._pending_index]
@@ -69,7 +99,7 @@ class PracticeSession:
         best_pos, best_score = None, None
         for pos, q_idx in enumerate(self._remaining):
             q = self.questions[q_idx]
-            info = fisher_information(q.a, q.b, self.theta_for_skill(q.skill_id))
+            info = self._exploration_score(q, self.theta_for_skill(q.skill_id))
             if best_score is None or info > best_score + 1e-12:
                 best_pos, best_score = pos, info
         idx = self._remaining.pop(best_pos)

@@ -723,9 +723,17 @@ def start_practice(state, m, body):
     seed = str(seed) if seed not in (None, "") else uuid.uuid4().hex[:10]
 
     learner = _learner_for(state, user_id)
+    # Fetch calibration info for cold-start exploration
+    qids = [q.to_dict()["question_id"] for q in 
+            QuestionBank(master_seed=seed).fill_blueprint(
+                BlueprintModel().draw(length, section=section, skill_ids=skills, 
+                                      profile=body.get("profile") or DEFAULT_PROFILE, seed=seed))]
+    calibration_info = state.store.get_calibration_info(qids)
+    
     try:
         session = PracticeSession(user_id=user_id, section=section, length=length,
-                                  skills=skills, seed=seed, learner=learner)
+                                  skills=skills, seed=seed, learner=learner,
+                                  calibration_info=calibration_info)
     except GenerationError as e:
         raise ApiError(500, f"question generation failed: {e}")
     except ValueError as e:
@@ -777,7 +785,7 @@ def answer_question(state, m, body):
             rec = session.answer(choice_index)
         except RuntimeError as e:
             raise ApiError(409, str(e))
-        state.store.add_response(m.group(1), rec)
+        state.store.record_response(m.group(1), session.user_id, rec)
         state.store.save_theta(session.user_id, session.learner)
     out = {
         "correct": bool(rec.correct),
@@ -919,7 +927,7 @@ def answer_mock_question(state, m, body):
             question=question, choice_index=choice_index,
             correct=bool(question.is_correct(choice_index)),
             theta_before=theta_before, theta_after=theta_after)
-        state.store.add_response(mock_id, record)
+        state.store.record_response(mock_id, mock.user_id, record)
         state.store.save_theta(mock.user_id, mock.learner)
 
         new_modules = set(mock.modules.keys()) - before_modules

@@ -2,6 +2,7 @@ import json
 import sqlite3
 import threading
 import time
+from typing import List, Dict
 
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS users (
@@ -31,9 +32,21 @@ CREATE TABLE IF NOT EXISTS items (
     PRIMARY KEY (question_id, session_id)
 );
 
+CREATE TABLE IF NOT EXISTS calibrated_items (
+    question_id TEXT PRIMARY KEY,
+    a REAL NOT NULL,
+    b REAL NOT NULL,
+    response_count INTEGER NOT NULL DEFAULT 0,
+    last_calibrated_at REAL,
+    prior_a REAL NOT NULL,
+    prior_b REAL NOT NULL,
+    prior_weight REAL NOT NULL DEFAULT 1.0
+);
+
 CREATE TABLE IF NOT EXISTS responses (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     session_id TEXT NOT NULL,
+    user_id TEXT NOT NULL,
     question_id TEXT NOT NULL,
     skill_id TEXT NOT NULL,
     difficulty TEXT NOT NULL,
@@ -135,18 +148,172 @@ class Store:
                 " VALUES (?, ?, ?)",
                 (question_dict["question_id"], session_id,
                  json.dumps(question_dict)))
+            # Register prior for calibration
+            self._conn.execute(
+                "INSERT INTO calibrated_items (question_id, a, b, prior_a, prior_b, prior_weight, "
+                "response_count, last_calibrated_at) VALUES (?, ?, ?, ?, ?, 1.0, 0, NULL) "
+                "ON CONFLICT(question_id) DO UPDATE SET a=excluded.a, b=excluded.b, "
+                "prior_a=excluded.prior_a, prior_b=excluded.prior_b, "
+                "prior_weight=excluded.prior_weight",
+                (question_dict["question_id"], question_dict["a"], question_dict["b"],
+                 question_dict["a"], question_dict["b"]))
             self._conn.commit()
 
-    def add_response(self, session_id: str, rec) -> None:
+    def add_response(self, session_id: str, rec, user_id: str = None) -> None:
+        """Add a response. If user_id not provided, look it up from the session."""
         q = rec.question
+        if user_id is None:
+            row = self._conn.execute(
+                "SELECT user_id FROM sessions WHERE session_id = ?", (session_id,)).fetchone()
+            user_id = row["user_id"] if row else "unknown"
         with self._lock:
             self._conn.execute(
-                "INSERT INTO responses (session_id, question_id, skill_id, difficulty,"
+                "INSERT INTO responses (session_id, user_id, question_id, skill_id, difficulty,"
                 " choice_index, correct, a, b, theta_before, theta_after, answered_at)"
-                " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
-                (session_id, q.question_id, q.skill_id, q.difficulty,
+                " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (session_id, user_id, q.question_id, q.skill_id, q.difficulty,
                  int(rec.choice_index), int(rec.correct), float(q.a), float(q.b),
                  float(rec.theta_before), float(rec.theta_after), time.time()))
+            self._conn.commit()
+
+    # --- Calibrated items ---
+
+    def get_calibrated_item(self, question_id: str):
+        """Get calibrated item parameters, or None if not yet calibrated."""
+        with self._lock:
+            row = self._conn.execute(
+                "SELECT a, b, response_count, prior_a, prior_b, prior_weight "
+                "FROM calibrated_items WHERE question_id = ?",
+                (question_id,)).fetchone()
+            return dict(row) if row else None
+
+    def get_calibration_info(self, question_ids: List[str]) -> Dict[str, int]:
+        """Get response counts for a list of question IDs."""
+        if not question_ids:
+            return {}
+        placeholders = ",".join("?" * len(question_ids))
+        with self._lock:
+            rows = self._conn.execute(
+                f"SELECT question_id, response_count FROM calibrated_items "
+                f"WHERE question_id IN ({placeholders})",
+                question_ids).fetchall()
+            return {row["question_id"]: row["response_count"] for row in rows}
+
+    def upsert_calibrated_item(self, question_id: str, a: float, b: float,
+                                prior_weight: float = 1.0) -> None:
+        """Insert or update a calibrated item with its prior parameters.
+        
+        Called when a new item is first seen to record its prior (a, b).
+        """
+        with self._lock:
+            self._conn.execute(
+                "INSERT INTO calibrated_items (question_id, a, b, prior_a, prior_b, prior_weight, "
+                "response_count, last_calibrated_at) VALUES (?, ?, ?, ?, ?, ?, 0, NULL) "
+                "ON CONFLICT(question_id) DO UPDATE SET a=excluded.a, b=excluded.b, "
+                "prior_a=excluded.prior_a, prior_b=excluded.prior_b, "
+                "prior_weight=excluded.prior_weight",
+                (question_id, a, b, a, b, prior_weight))
+            self._conn.commit()
+
+    def _maybe_calibrate(self, question_id: str) -> None:
+        """Check if item has N>=30 responses and run Bayesian recalibration if so."""
+        with self._lock:
+            row = self._conn.execute(
+                "SELECT response_count, prior_a, prior_b, prior_weight, a, b "
+                "FROM calibrated_items WHERE question_id = ?",
+                (question_id,)).fetchone()
+            if not row or row["response_count"] < 30:
+                return
+            # Run Bayesian update: blend prior with empirical MLE
+            self._bayesian_update(question_id, row)
+
+    def _bayesian_update(self, question_id: str, row: dict) -> None:
+        """Bayesian update of (a, b) using precision-weighted average of prior and empirical.
+        
+        For 2PL, we approximate: empirical b from response log, empirical a from 
+        discrimination of responses. Prior weight is treated as pseudo-count.
+        """
+        # Get empirical estimates from responses
+        emp = self._conn.execute(
+            "SELECT AVG(CASE WHEN correct=1 THEN 1.0 ELSE 0.0 END) AS p_correct, "
+            "       AVG(theta_before) AS mean_theta, "
+            "       COUNT(*) AS n "
+            "FROM responses WHERE question_id = ?",
+            (question_id,)).fetchone()
+        
+        n = emp["n"]
+        if n < 30:
+            return
+        
+        # Empirical b: solve p = logistic(a*(theta - b)) for b
+        # Using mean theta and observed p_correct
+        # With fixed a (use prior a as anchor), b = theta - logit(p)/a
+        import math
+        
+        p_correct = emp["p_correct"] or 0.5
+        p_correct = max(0.01, min(0.99, p_correct))  # clamp
+        mean_theta = emp["mean_theta"] or 0.0
+        prior_a = row["prior_a"]
+        prior_b = row["prior_b"]
+        prior_weight = row["prior_weight"]
+        
+        # Precision-weighted average for b
+        # Prior variance ≈ 1.0 (from B_PRIOR_SD)
+        # Empirical variance ≈ 1 / (n * a^2 * p * (1-p))  (Fisher info)
+        p = p_correct
+        info_emp = n * prior_a * prior_a * p * (1 - p)
+        var_emp = 1.0 / info_emp if info_emp > 0 else 1.0
+        var_prior = 1.0 / prior_weight if prior_weight > 0 else 1.0
+        
+        # Empirical b from MLE: b = theta - logit(p)/a
+        logit_p = math.log(p / (1 - p))
+        b_emp = mean_theta - logit_p / prior_a if prior_a > 0 else mean_theta
+        
+        # Blend: precision-weighted
+        w_prior = 1.0 / var_prior
+        w_emp = 1.0 / var_emp
+        b_new = (w_prior * prior_b + w_emp * b_emp) / (w_prior + w_emp)
+        
+        # Update a with shrinkage toward prior
+        a_new = (prior_weight * prior_a + w_emp * prior_a) / (prior_weight + w_emp)
+        
+        # Update in database
+        self._conn.execute(
+            "UPDATE calibrated_items SET a=?, b=?, response_count=?, "
+            "last_calibrated_at=?, prior_weight=? WHERE question_id=?",
+            (a_new, b_new, n, time.time(), prior_weight + n, question_id))
+        self._conn.commit()
+
+    def record_response(self, session_id: str, user_id: str, rec) -> None:
+        """Record a response and update calibrated item if N>=30."""
+        q = rec.question
+        qid = q.question_id
+        with self._lock:
+            # Insert response with user_id
+            self._conn.execute(
+                "INSERT INTO responses (session_id, user_id, question_id, skill_id, difficulty,"
+                " choice_index, correct, a, b, theta_before, theta_after, answered_at)"
+                " VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
+                (session_id, user_id, qid, q.skill_id, q.difficulty,
+                 int(rec.choice_index), int(rec.correct), float(q.a), float(q.b),
+                 float(rec.theta_before), float(rec.theta_after), time.time()))
+            
+            # Upsert calibrated item with prior if new
+            self._conn.execute(
+                "INSERT INTO calibrated_items (question_id, a, b, prior_a, prior_b, prior_weight, "
+                "response_count, last_calibrated_at) VALUES (?, ?, ?, ?, ?, 1.0, 0, NULL) "
+                "ON CONFLICT(question_id) DO UPDATE SET "
+                "response_count = response_count + 1",
+                (qid, float(q.a), float(q.b), float(q.a), float(q.b)))
+            
+            # Check if we should calibrate
+            row = self._conn.execute(
+                "SELECT response_count FROM calibrated_items WHERE question_id = ?",
+                (qid,)).fetchone()
+            if row and row["response_count"] >= 30:
+                # Run calibration inline (or could defer to nightly job)
+                self._bayesian_update(qid, dict(row))
+            
             self._conn.commit()
 
     def save_theta(self, user_id: str, learner) -> None:
