@@ -262,77 +262,121 @@ PURPOSE_PASSAGES = [
 
 CTC_ENTRIES = [
     {"tier": "easy",
-     "text1": "Adding protected bike lanes downtown will reduce traffic injuries.",
+     "text1": ("Adding protected bike lanes downtown will reduce traffic injuries. "
+               "City planners point to data from other municipalities showing "
+               "consistent declines in cyclist-involved crashes."),
      "stances": {
-         "supports": "Cities that installed protected lanes saw injury rates fall "
-                     "within two years.",
-         "contradicts": "Injury rates on our city's Main Street rose after protected "
-                        "lanes were installed there.",
-         "complicates": "Protected lanes reduced car-bike collisions on some streets "
-                        "but increased them at intersections."}},
+         "supports": ("Cities that installed protected lanes saw injury rates fall "
+                      "within two years. A five-year study of twenty cities "
+                      "confirmed the trend held across different street layouts."),
+         "contradicts": ("Injury rates on our city's Main Street rose after "
+                         "protected lanes were installed there. Local officials "
+                         "attribute the increase to drivers unfamiliar with the "
+                         "new configuration."),
+         "complicates": ("Protected lanes reduced car-bike collisions on some "
+                         "streets but increased them at intersections. The "
+                         "intersection effect was strongest where turn lanes "
+                         "were not added alongside the protected lanes.")}},
     {"tier": "easy",
-     "text1": "Later school start times improve student alertness.",
+     "text1": ("Later school start times improve student alertness. Research "
+               "suggests adolescents need more sleep than early bell schedules "
+               "allow."),
      "stances": {
-         "supports": "Students at schools that delayed start times reported feeling "
-                     "less sleepy during morning classes.",
-         "contradicts": "A large survey found no change in student alertness after "
-                        "start times shifted later.",
-         "complicates": "Alertness improved for older teens but declined for students "
-                        "with long bus commutes."}},
+         "supports": ("Students at schools that delayed start times reported "
+                      "feeling less sleepy during morning classes. Teachers "
+                      "noted increased participation in first-period discussions."),
+         "contradicts": ("A large survey found no change in student alertness "
+                         "after start times shifted later. Many students simply "
+                         "stayed up later, negating the potential sleep gain."),
+         "complicates": ("Alertness improved for older teens but declined for "
+                         "students with long bus commutes. Those students had "
+                         "to wake even earlier to catch revised bus schedules.")}},
     {"tier": "medium",
-     "text1": "Common houseplants meaningfully improve indoor air quality.",
+     "text1": ("Common houseplants meaningfully improve indoor air quality. "
+               "Proponents cite NASA chamber studies from the 1980s showing "
+               "plants absorb volatile organic compounds."),
      "stances": {
-         "supports": "Chamber studies show several common houseplants absorb certain "
-                     "airborne compounds.",
-         "contradicts": "Building-scale tests find plants remove far too little of "
-                        "these compounds to matter.",
-         "complicates": "Houseplants filter some chemicals effectively while doing "
-                        "almost nothing for others."}},
+         "supports": ("Chamber studies show several common houseplants absorb "
+                      "certain airborne compounds. Peace lilies and snake "
+                      "plants were among the most effective species tested."),
+         "contradicts": ("Building-scale tests find plants remove far too little "
+                         "of these compounds to matter. The chamber conditions "
+                         "did not reflect real-room air exchange rates."),
+         "complicates": ("Houseplants filter some chemicals effectively while "
+                         "doing almost nothing for others. Benzene absorption "
+                         "was strong, but formaldehyde removal was negligible "
+                         "in typical room volumes.")}},
     {"tier": "medium",
-     "text1": "Four-day workweeks raise employee productivity.",
+     "text1": ("Four-day workweeks raise employee productivity. Companies "
+               "adopting the schedule report maintained or increased output "
+               "with fewer work hours."),
      "stances": {
-         "supports": "Trial firms produced the same output in four days as they had "
-                     "in five.",
-         "contradicts": "Weekly output fell at firms that cut to four days without "
-                        "reducing total workload.",
-         "complicates": "Productivity rose for office roles but did not improve in "
-                        "shift-based roles."}},
+         "supports": ("Trial firms produced the same output in four days as "
+                      "they had in five. Employees eliminated low-value "
+                      "meetings and compressed focused work into core hours."),
+         "contradicts": ("Weekly output fell at firms that cut to four days "
+                         "without reducing total workload. The same tasks "
+                         "simply took longer when compressed."),
+         "complicates": ("Productivity rose for office roles but did not "
+                         "improve in shift-based roles. Manufacturing and "
+                         "service teams saw no gains from the compressed week.")}},
     {"tier": "easy",
-     "text1": "School gardens increase children's vegetable intake.",
+     "text1": ("School gardens increase children's vegetable intake. Hands-on "
+               "growing experiences make students more willing to try the "
+               "produce they helped cultivate."),
      "stances": {
-         "supports": "Students at schools with gardens reported eating more "
-                     "vegetables each week.",
-         "contradicts": "Intake surveys showed no difference between garden and "
-                        "non-garden schools.",
-         "complicates": "Garden students ate more vegetables at school but not at "
-                        "home."}},
+         "supports": ("Students at schools with gardens reported eating more "
+                      "vegetables each week. Cafeteria data confirmed higher "
+                      "salad-bar selection on garden-harvest days."),
+         "contradicts": ("Intake surveys showed no difference between garden "
+                         "and non-garden schools. The garden effect did not "
+                         "persist through summer break."),
+         "complicates": ("Garden students ate more vegetables at school but "
+                         "not at home. The increase was limited to meals where "
+                         "garden produce was served directly.")}},
     {"tier": "medium",
-     "text1": "Cities should convert vacant lots into pocket parks.",
+     "text1": ("Cities should convert vacant lots into pocket parks. Small "
+               "green spaces can revitalize neighborhoods at relatively low "
+               "cost."),
      "stances": {
-         "supports": "Neighborhoods that added pocket parks reported rising "
-                     "resident satisfaction.",
-         "contradicts": "Several converted lots fell into disrepair because upkeep "
-                        "lapsed after opening.",
-         "complicates": "Pocket parks lifted satisfaction on quiet streets while "
-                        "drawing noise complaints on busy ones."}},
+         "supports": ("Neighborhoods that added pocket parks reported rising "
+                      "resident satisfaction. Property values near new parks "
+                      "increased modestly within two years."),
+         "contradicts": ("Several converted lots fell into disrepair because "
+                         "upkeep lapsed after opening. Municipal maintenance "
+                         "budgets did not account for the new acreage."),
+         "complicates": ("Pocket parks lifted satisfaction on quiet streets "
+                         "while drawing noise complaints on busy ones. Evening "
+                         "use patterns differed sharply by surrounding land use.")}},
     {"tier": "hard",
-     "text1": "Automated essay scoring is reliable enough for college placement "
-              "decisions.",
+     "text1": ("Automated essay scoring is reliable enough for college "
+               "placement decisions. Machine learning models now match human "
+               "readers on holistic rubric scores."),
      "stances": {
-         "supports": "On double-scored samples, machine-human agreement matches "
-                     "human-human agreement.",
-         "contradicts": "Adversarial essays padded with sophisticated gibberish "
-                        "earned passing machine scores.",
-         "complicates": "The software agrees with human readers on structure but "
-                        "penalizes unconventional yet valid arguments."}},
+         "supports": ("On double-scored samples, machine-human agreement "
+                      "matches human-human agreement. The system processes "
+                      "thousands of essays in minutes without fatigue."),
+         "contradicts": ("Adversarial essays padded with sophisticated "
+                         "gibberish earned passing machine scores. The models "
+                         "rewarded vocabulary and length over coherence."),
+         "complicates": ("The software agrees with human readers on structure "
+                         "but penalizes unconventional yet valid arguments. "
+                         "Creative rhetorical choices were scored lower than "
+                         "formulaic five-paragraph templates.")}},
     {"tier": "hard",
-     "text1": "Four-day school weeks harm student achievement.",
+     "text1": ("Four-day school weeks harm student achievement. Compressing "
+               "instructional time into fewer days reduces learning "
+               "opportunities."),
      "stances": {
-         "supports": "Test scores dipped in districts after the switch to four days.",
-         "contradicts": "Districts on four-day weeks matched five-day districts' "
-                        "scores.",
-         "complicates": "Scores held steady overall but fell for students without "
-                        "reliable home internet."}},
+         "supports": ("Test scores dipped in districts after the switch to "
+                      "four days. The decline was most pronounced in math "
+                      "and among younger students."),
+         "contradicts": ("Districts on four-day weeks matched five-day "
+                         "districts' scores. Longer daily blocks allowed "
+                         "deeper project-based work."),
+         "complicates": ("Scores held steady overall but fell for students "
+                         "without reliable home internet. Those students lost "
+                         "the fifth day of school-based connectivity.")}},
 ]
 
 MAIN_IDEA_ITEMS = [
@@ -400,6 +444,9 @@ MAIN_IDEA_ITEMS = [
 
 CLAIM_EVIDENCE_TOPICS = [
     {"tier": "easy",
+     "context": ("Researchers surveyed elementary and middle schools across three "
+                 "districts, comparing morning test performance between students who "
+                 "ate breakfast at home or school and those who did not."),
      "claim": "Students who eat breakfast before school perform better on morning tests.",
      "support": lambda n, hi, lo: (
          f"In a study of {n} schools, students who ate breakfast averaged {hi}% on "
@@ -409,6 +456,9 @@ CLAIM_EVIDENCE_TOPICS = [
          lambda n, hi, lo: f"Afternoon test scores were nearly identical across breakfast habits.",
          lambda n, hi, lo: f"Breakfast programs cost schools about two dollars per student per week."]},
     {"tier": "medium",
+     "context": ("A cognitive science lab placed identical desk plants in half of "
+                 "the workstations in an open-plan office. Over six weeks, employees "
+                 "completed timed proofreading tasks at their desks."),
      "claim": "Office workers focus better when plants are visible at their desks.",
      "support": lambda n, hi, lo: (
          f"Across {n} offices, workers with desk plants completed a proofreading task "
@@ -418,6 +468,9 @@ CLAIM_EVIDENCE_TOPICS = [
          lambda n, hi, lo: f"Plants reduced measured noise levels slightly in open offices.",
          lambda n, hi, lo: f"The most common desk plants cost under ten dollars each."]},
     {"tier": "medium",
+     "context": ("A police department partnered with neighborhood associations to "
+                 "install watch signs on randomly selected blocks. Crime reports were "
+                 "tracked for eighteen months before and after installation."),
      "claim": "Neighborhood watch signs reduce daytime break-ins.",
      "support": lambda n, hi, lo: (
          f"Blocks displaying {n} new signs saw reported daytime break-ins fall to "
@@ -427,6 +480,9 @@ CLAIM_EVIDENCE_TOPICS = [
          lambda n, hi, lo: f"The average sign costs about forty dollars to produce and install.",
          lambda n, hi, lo: f"Nighttime break-ins fell across the whole city during the study."]},
     {"tier": "hard",
+     "context": ("A university sleep lab recruited varsity basketball players for a "
+                 "two-week protocol. Baseline free-throw percentages were recorded, "
+                 "then players added ninety minutes to their nightly sleep."),
      "claim": "Extending sleep improves free-throw accuracy in young basketball players.",
      "support": lambda n, hi, lo: (
          f"Players who extended sleep for {n} nights made {hi}% of free throws in "
@@ -436,6 +492,9 @@ CLAIM_EVIDENCE_TOPICS = [
          lambda n, hi, lo: f"Taller players tended to have higher shooting percentages overall.",
          lambda n, hi, lo: f"Practice minutes per week were similar across all players studied."]},
     {"tier": "hard",
+     "context": ("A consumer-safety lab tested warning-label formats with adults "
+                 "who read product information in either a single language or a "
+                 "bilingual format. Recall was measured after a short delay."),
      "claim": "Bilingual labels make product warnings easier to remember.",
      "support": lambda n, hi, lo: (
          f"After {n} minutes with bilingual warning labels, participants recalled "
@@ -448,58 +507,73 @@ CLAIM_EVIDENCE_TOPICS = [
 
 INFERENCE_ITEMS = [
     {"tier": "easy",
-     "passage": ("The gallery displays paintings only from Tuesday through Saturday. "
-                 "Admission is free on Wednesdays."),
+     "passage": ("The Cedar Grove gallery displays paintings only from Tuesday "
+                 "through Saturday. Admission is free on Wednesdays. The gallery "
+                 "closes each evening at 6 p.m., but on the first Friday of each "
+                 "month it stays open until 9 p.m. for a reception."),
      "correct": "A visitor who wants free admission should go on a Wednesday.",
      "wrongs": ["The gallery is open every day of the week.",
                 "Admission is always free at the gallery.",
                 "The gallery displays sculptures as well as paintings."]},
     {"tier": "easy",
-     "passage": ("The plant nursery refunds any tree that fails to leaf out by "
-                 "June 1. The nursery closes every Sunday."),
+     "passage": ("The Willow Creek plant nursery refunds any tree that fails to "
+                 "leaf out by June 1. The nursery closes every Sunday. Customers "
+                 "who purchase a tree in March can return it for a full refund "
+                 "through the end of May if it has not leafed out."),
      "correct": "A customer cannot buy a refund-eligible tree there on a Sunday.",
      "wrongs": ["The nursery sells only trees.",
                 "Refunds require a written request.",
                 "The nursery opens late on Sundays."]},
     {"tier": "easy",
-     "passage": ("The bakery sells rye bread only on Fridays and Saturdays. On "
-                 "Saturdays, the bakery closes at noon."),
+     "passage": ("The Millstone bakery sells rye bread only on Fridays and "
+                 "Saturdays. On Saturdays, the bakery closes at noon. The rye "
+                 "loaves typically sell out within an hour of opening."),
      "correct": "On some days the bakery sells rye bread before noon.",
      "wrongs": ["Rye bread sells out before noon on Fridays.",
                 "The bakery closes at noon on both Friday and Saturday.",
                 "The bakery sells rye bread on Sundays."]},
     {"tier": "medium",
-     "passage": ("Every locker in Row C opens with a key, not a code. Over winter "
-                 "break, exactly half of the Row C keys were replaced."),
+     "passage": ("Every locker in Row C of the downtown station opens with a "
+                 "physical key, not a code. Over winter break, exactly half of "
+                 "the Row C keys were replaced with new ones. The station manager "
+                 "kept the original keys in a locked drawer in the office."),
      "correct": "At least some lockers in Row C use keys made before winter break.",
      "wrongs": ["No locker in Row C opens with a key.",
                 "Every key for Row C was replaced over winter break.",
                 "Some lockers in Row C open with codes."]},
     {"tier": "medium",
-     "passage": ("The shuttle runs between the two campuses every twenty minutes. "
-                 "The first shuttle leaves the north campus at 7:10 a.m."),
+     "passage": ("The campus shuttle runs between the north and south campuses "
+                 "every twenty minutes. The first shuttle leaves the north campus "
+                 "at 7:10 a.m. Service continues until the final departure at "
+                 "10:50 p.m. from the south campus."),
      "correct": "A shuttle departs the north campus at 7:30 a.m.",
      "wrongs": ["Shuttles leave both campuses at 7:10 a.m.",
                 "The shuttle runs every twelve minutes.",
                 "The last shuttle leaves after midnight."]},
     {"tier": "medium",
-     "passage": ("Members who join after March pay a reduced initiation fee, but "
-                 "every member pays the same annual dues each January."),
+     "passage": ("Members who join the Ridgeview club after March pay a reduced "
+                 "initiation fee, but every member pays the same annual dues "
+                 "each January. The dues cover access to the pool, courts, and "
+                 "fitness center. Late payments incur a small administrative fee."),
      "correct": "Two members who joined in different years pay the same January dues.",
      "wrongs": ["Members who joined earliest pay lower annual dues.",
                 "The initiation fee is refunded every January.",
                 "No member pays an initiation fee."]},
     {"tier": "hard",
-     "passage": ("Every novel on the shelf is either historical fiction or a mystery. "
-                 "All the mysteries were published after 1990, but some historical "
-                 "fiction dates from earlier decades."),
+     "passage": ("Every novel on the library's special-collections shelf is "
+                 "either historical fiction or a mystery. All the mysteries were "
+                 "published after 1990, but some historical fiction dates from "
+                 "earlier decades. The collection was curated to show the "
+                 "evolution of both genres over time."),
      "correct": "Any book on the shelf published before 1990 is historical fiction.",
      "wrongs": ["Some mysteries on the shelf were published before 1990.",
                 "Every historical novel on the shelf was published after 1990.",
                 "No book on the shelf combines history and mystery elements."]},
     {"tier": "hard",
-     "passage": ("Of the five speakers scheduled, three discuss geology and no two "
-                 "talks overlap. The two non-geology talks run back to back."),
+     "passage": ("Of the five speakers scheduled for the symposium, three "
+                 "discuss geology and no two talks overlap. The two non-geology "
+                 "talks run back to back in the afternoon session. A moderator "
+                 "introduces each speaker and fields audience questions."),
      "correct": "The schedule includes a stretch of at least two consecutive talks with no geology speaker.",
      "wrongs": ["No two geology talks ever run consecutively.",
                 "Exactly two speakers discuss geology.",
@@ -676,6 +750,337 @@ COLON_ITEMS = [
      "the letters would remain sealed until 2050"),
 ]
 
+TRANSITION_PARAGRAPHS = {
+    "easy": [
+        {"before": "Researchers studying the valley's agriculture have found that the soil is thin and nutrient-poor.",
+         "first": "the soil lacks essential minerals",
+         "second": "farmers there have long relied on imported fertilizer",
+         "after": "Recent soil analyses confirm the dependency.",
+         "correct": "therefore",
+         "wrongs": ["however", "moreover", "nevertheless"]},
+        {"before": "Winter tourism keeps the mountain town busy through February.",
+         "first": "hotels and restaurants operate at full capacity",
+         "second": "the months of March and April remain quiet",
+         "after": "Local businesses plan their staffing around this pattern.",
+         "correct": "by contrast",
+         "wrongs": ["therefore", "moreover", "as a result"]},
+        {"before": "The new library branch offers free tutoring on weekdays.",
+         "first": "students receive help with core subjects",
+         "second": "it hosts weekend coding clubs for teenagers",
+         "after": "Both programs are funded by the municipal grant.",
+         "correct": "moreover",
+         "wrongs": ["however", "therefore", "nevertheless"]},
+        {"before": "The old bridge closed for repairs last spring.",
+         "first": "the main route across the river was severed",
+         "second": "commuters faced long detours for six weeks",
+         "after": "Traffic patterns still show the impact today.",
+         "correct": "as a result",
+         "wrongs": ["however", "moreover", "by contrast"]},
+        {"before": "Demand for the introductory course doubled this year.",
+         "first": "waitlists grew beyond the department's capacity",
+         "second": "the department hired a second instructor",
+         "after": "Class sizes have returned to manageable levels.",
+         "correct": "consequently",
+         "wrongs": ["however", "furthermore", "by contrast"]},
+        {"before": "The reservoir dropped below half capacity in July.",
+         "first": "water levels reached a twenty-year low",
+         "second": "the city banned lawn watering through September",
+         "after": "Rainfall in October finally restored normal levels.",
+         "correct": "therefore",
+         "wrongs": ["however", "moreover", "by contrast"]},
+    ],
+    "medium": [
+        {"before": "The printer produces pages quickly and quietly.",
+         "first": "it handles large jobs without jamming",
+         "second": "its ink costs run unusually high",
+         "after": "Budget-conscious departments limit color printing.",
+         "correct": "however",
+         "wrongs": ["therefore", "moreover", "as a result"]},
+        {"before": "The trailhead gained a parking lot last spring.",
+         "first": "access to the popular loop trail improved",
+         "second": "rangers added restrooms at the summit",
+         "after": "Visitor numbers have increased each month since.",
+         "correct": "additionally",
+         "wrongs": ["therefore", "however", "nevertheless"]},
+        {"before": "The storm knocked out the harbor lights.",
+         "first": "navigation became dangerous after dark",
+         "second": "ferry service paused until dawn",
+         "after": "No vessels were damaged during the outage.",
+         "correct": "consequently",
+         "wrongs": ["however", "furthermore", "by contrast"]},
+        {"before": "Critics call the redevelopment plan ambitious.",
+         "first": "the timeline alone spans a decade",
+         "second": "few deny that its goals are reachable",
+         "after": "The city council approved funding unanimously.",
+         "correct": "nevertheless",
+         "wrongs": ["therefore", "moreover", "as a result"]},
+        {"before": "The bakery now ships its signature bread statewide.",
+         "first": "online orders arrive from across the region",
+         "second": "it still sells out most mornings downtown",
+         "after": "Local customers arrive before opening to secure a loaf.",
+         "correct": "even so",
+         "wrongs": ["therefore", "moreover", "as a result"]},
+        {"before": "Enrollment exceeded all projections for the fall term.",
+         "first": "the freshman class alone grew by twelve percent",
+         "second": "two portable classrooms arrived by August",
+         "after": "The district plans a permanent addition next year.",
+         "correct": "accordingly",
+         "wrongs": ["however", "nevertheless", "by contrast"]},
+    ],
+    "hard": [
+        {"before": "The recipe uses only pantry staples and takes twenty minutes.",
+         "first": "the ingredient list is surprisingly short",
+         "second": "shoppers often make special trips for its saffron",
+         "after": "The spice accounts for most of the dish's cost.",
+         "correct": "nevertheless",
+         "wrongs": ["therefore", "furthermore", "as a result"]},
+        {"before": "Automated scoring matches human readers on holistic rubrics.",
+         "first": "the models process thousands of essays in minutes",
+         "second": "adversarial essays padded with gibberish earned passing scores",
+         "after": "The discrepancy has prompted calls for human review.",
+         "correct": "however",
+         "wrongs": ["therefore", "moreover", "consequently"]},
+        {"before": "Four-day school weeks maintain overall test scores.",
+         "first": "longer daily blocks allow deeper project work",
+         "second": "scores fell for students without reliable home internet",
+         "after": "Equity concerns have stalled statewide adoption.",
+         "correct": "yet",
+         "wrongs": ["therefore", "moreover", "consequently"]},
+        {"before": "The software requires a subscription for full functionality.",
+         "first": "the professional tier costs hundreds per year",
+         "second": "the library offers it free to every cardholder",
+         "after": "Patrons save hundreds annually on design tools.",
+         "correct": "still",
+         "wrongs": ["therefore", "moreover", "as a result"]},
+        {"before": "Houseplants absorb certain airborne compounds in sealed chambers.",
+         "first": "chamber studies show measurable uptake of VOCs",
+         "second": "building-scale tests find plants remove far too little to matter",
+         "after": "Real-room air exchange overwhelms the plants' capacity.",
+         "correct": "however",
+         "wrongs": ["therefore", "furthermore", "consequently"]},
+        {"before": "Weekly output fell at firms that cut to four days without reducing workload.",
+         "first": "employees reported higher stress and fatigue",
+         "second": "the same tasks simply took longer when compressed",
+         "after": "Productivity gains require workload redesign, not just schedule changes.",
+         "correct": "in fact",
+         "wrongs": ["therefore", "however", "nevertheless"]},
+    ],
+}
+
+BOUNDARY_PARAGRAPHS = {
+    "easy": [
+        {"text": ("The bakery opens at dawn; its ovens glow before sunrise. "
+                  "The first customers arrive by 6 a.m."),
+         "blank_pos": 1,
+         "first": "The bakery opens at dawn",
+         "second": "its ovens glow before sunrise",
+         "correct": "The bakery opens at dawn; its ovens glow before sunrise.",
+         "wrongs": ["The bakery opens at dawn, its ovens glow before sunrise.",
+                    "The bakery opens at dawn its ovens glow before sunrise.",
+                    "The bakery opens at dawn. Its ovens glow before sunrise."],
+         "expl": "Two independent clauses joined by a semicolon; a comma alone creates a comma splice."},
+        {"text": ("The ferry leaves every hour; the dock fills up quickly. "
+                  "Weekend lines stretch down the pier."),
+         "blank_pos": 1,
+         "first": "The ferry leaves every hour",
+         "second": "the dock fills up quickly",
+         "correct": "The ferry leaves every hour; the dock fills up quickly.",
+         "wrongs": ["The ferry leaves every hour, the dock fills up quickly.",
+                    "The ferry leaves every hour the dock fills up quickly.",
+                    "The ferry leaves every hour. The dock fills up quickly."],
+         "expl": "A semicolon correctly joins two independent clauses; a comma splice or fused sentence is incorrect."},
+        {"text": ("Rain flooded the lower field; the festival moved to the "
+                  "gymnasium. Attendance was unaffected."),
+         "blank_pos": 1,
+         "first": "Rain flooded the lower field",
+         "second": "the festival moved to the gymnasium",
+         "correct": "Rain flooded the lower field; the festival moved to the gymnasium.",
+         "wrongs": ["Rain flooded the lower field, the festival moved to the gymnasium.",
+                    "Rain flooded the lower field the festival moved to the gymnasium.",
+                    "Rain flooded the lower field. The festival moved to the gymnasium."],
+         "expl": "The semicolon joins two independent clauses; a comma alone is insufficient."},
+        {"text": ("Volunteers repainted the community center; neighbors "
+                  "donated most of the supplies. The project finished in a "
+                  "weekend."),
+         "blank_pos": 1,
+         "first": "Volunteers repainted the community center",
+         "second": "neighbors donated most of the supplies",
+         "correct": "Volunteers repainted the community center; neighbors donated most of the supplies.",
+         "wrongs": ["Volunteers repainted the community center, neighbors donated most of the supplies.",
+                    "Volunteers repainted the community center neighbors donated most of the supplies.",
+                    "Volunteers repainted the community center. Neighbors donated most of the supplies."],
+         "expl": "Two independent clauses require a semicolon (or period), not a comma."},
+    ],
+    "medium": [
+        {"text": ("The trail switchbacks up the ridge; however, hikers gain "
+                  "a thousand feet by lunchtime. The view from the top rewards "
+                  "every step."),
+         "blank_pos": 1,
+         "first": "The trail switchbacks up the ridge",
+         "second": "hikers gain a thousand feet by lunchtime",
+         "correct": "The trail switchbacks up the ridge; however, hikers gain a thousand feet by lunchtime.",
+         "wrongs": ["The trail switchbacks up the ridge, however, hikers gain a thousand feet by lunchtime.",
+                    "The trail switchbacks up the ridge; however hikers gain a thousand feet by lunchtime.",
+                    "The trail switchbacks up the ridge, however hikers gain a thousand feet by lunchtime."],
+         "expl": "A semicolon plus a conjunctive adverb ('however') and a comma correctly joins independent clauses; a comma alone or missing comma after 'however' is incorrect."},
+        {"text": ("The observatory opens to the public on Fridays; therefore, "
+                  "volunteers staff the telescopes. Clear skies draw the "
+                  "largest crowds."),
+         "blank_pos": 1,
+         "first": "The observatory opens to the public on Fridays",
+         "second": "volunteers staff the telescopes",
+         "correct": "The observatory opens to the public on Fridays; therefore, volunteers staff the telescopes.",
+         "wrongs": ["The observatory opens to the public on Fridays, therefore, volunteers staff the telescopes.",
+                    "The observatory opens to the public on Fridays; therefore volunteers staff the telescopes.",
+                    "The observatory opens to the public on Fridays, therefore volunteers staff the telescopes."],
+         "expl": "A semicolon before the conjunctive adverb 'therefore' and a comma after it is the standard pattern; a comma splice or missing comma is incorrect."},
+        {"text": ("Snow closed the mountain pass; nevertheless, mail trucks "
+                  "took the valley route. Deliveries arrived only hours late."),
+         "blank_pos": 1,
+         "first": "Snow closed the mountain pass",
+         "second": "mail trucks took the valley route",
+         "correct": "Snow closed the mountain pass; nevertheless, mail trucks took the valley route.",
+         "wrongs": ["Snow closed the mountain pass, nevertheless, mail trucks took the valley route.",
+                    "Snow closed the mountain pass; nevertheless mail trucks took the valley route.",
+                    "Snow closed the mountain pass, nevertheless mail trucks took the valley route."],
+         "expl": "A semicolon plus conjunctive adverb ('nevertheless') with a comma is correct; a comma splice or missing comma is not."},
+        {"text": ("The choir rehearses in the library basement; moreover, the "
+                  "acoustics surprise first-time visitors. The space was "
+                  "designed for lectures."),
+         "blank_pos": 1,
+         "first": "The choir rehearses in the library basement",
+         "second": "the acoustics surprise first-time visitors",
+         "correct": "The choir rehearses in the library basement; moreover, the acoustics surprise first-time visitors.",
+         "wrongs": ["The choir rehearses in the library basement, moreover, the acoustics surprise first-time visitors.",
+                    "The choir rehearses in the library basement; moreover the acoustics surprise first-time visitors.",
+                    "The choir rehearses in the library basement, moreover the acoustics surprise first-time visitors."],
+         "expl": "A semicolon before and a comma after the conjunctive adverb 'moreover' correctly joins the clauses."},
+    ],
+    "hard": [
+        {"text": ("The festival imposes one strict requirement on its food "
+                  "vendors: all ingredients must be sourced within the county. "
+                  "Local farms benefit from the guaranteed demand."),
+         "blank_pos": 1,
+         "first": "The festival imposes one strict requirement on its food vendors",
+         "second": "all ingredients must be sourced within the county",
+         "correct": "The festival imposes one strict requirement on its food vendors: all ingredients must be sourced within the county.",
+         "wrongs": ["The festival imposes one strict requirement on its food vendors; all ingredients must be sourced within the county.",
+                    "The festival imposes one strict requirement on its food vendors, all ingredients must be sourced within the county.",
+                    "The festival imposes one strict requirement on its food vendors. All ingredients must be sourced within the county."],
+         "expl": "A colon introduces an explanation that follows an independent clause; a semicolon or comma alone would incorrectly join a clause to a fragment."},
+        {"text": ("The committee's final report rested on a single conclusion: "
+                  "the bridge could not be repaired at any reasonable cost. "
+                  "Replacement was the only viable option."),
+         "blank_pos": 1,
+         "first": "The committee's final report rested on a single conclusion",
+         "second": "the bridge could not be repaired at any reasonable cost",
+         "correct": "The committee's final report rested on a single conclusion: the bridge could not be repaired at any reasonable cost.",
+         "wrongs": ["The committee's final report rested on a single conclusion; the bridge could not be repaired at any reasonable cost.",
+                    "The committee's final report rested on a single conclusion, the bridge could not be repaired at any reasonable cost.",
+                    "The committee's final report rested on a single conclusion. The bridge could not be repaired at any reasonable cost."],
+         "expl": "A colon correctly introduces the explanation following the independent clause; a semicolon or comma splice is incorrect."},
+        {"text": ("The expedition carried one non-negotiable rule: no member "
+                  "ever hiked the final stretch alone. Safety depended on "
+                  "the buddy system."),
+         "blank_pos": 1,
+         "first": "The expedition carried one non-negotiable rule",
+         "second": "no member ever hiked the final stretch alone",
+         "correct": "The expedition carried one non-negotiable rule: no member ever hiked the final stretch alone.",
+         "wrongs": ["The expedition carried one non-negotiable rule; no member ever hiked the final stretch alone.",
+                    "The expedition carried one non-negotiable rule, no member ever hiked the final stretch alone.",
+                    "The expedition carried one non-negotiable rule. No member ever hiked the final stretch alone."],
+         "expl": "A colon introduces the rule stated after the independent clause; a semicolon would wrongly join a clause to a fragment."},
+        {"text": ("The archive's donation came with a single condition: the "
+                  "letters would remain sealed until 2050. Scholars await "
+                  "the unsealing eagerly."),
+         "blank_pos": 1,
+         "first": "The archive's donation came with a single condition",
+         "second": "the letters would remain sealed until 2050",
+         "correct": "The archive's donation came with a single condition: the letters would remain sealed until 2050.",
+         "wrongs": ["The archive's donation came with a single condition; the letters would remain sealed until 2050.",
+                    "The archive's donation came with a single condition, the letters would remain sealed until 2050.",
+                    "The archive's donation came with a single condition. The letters would remain sealed until 2050."],
+         "expl": "A colon introduces the condition specified after the independent clause; a semicolon or comma splice is incorrect."},
+    ],
+}
+
+FSS_PARAGRAPHS = {
+    "easy": [
+        {"text": ("Facing a budget shortfall, the planning board voted to "
+                  "______ the construction deadline by six months. The "
+                  "extension gives contractors breathing room."),
+         "correct": "extend",
+         "wrongs": ["extending", "extended", "extends"],
+         "expl": "After 'to' used as an infinitive marker, English requires the base verb form 'extend', not a participle or conjugated form."},
+        {"text": ("To address the backlog, the committee decided to "
+                  "______ all pending applications this week. Volunteers "
+                  "will assist with the review."),
+         "correct": "review",
+         "wrongs": ["reviewing", "reviewed", "reviews"],
+         "expl": "The infinitive 'to review' requires the base form; 'reviewing' is a participle and 'reviewed'/'reviews' are conjugated."},
+        {"text": ("Because the venue was unavailable, the organizers had to "
+                  "______ the event to next month. Ticket holders were "
+                  "notified immediately."),
+         "correct": "postpone",
+         "wrongs": ["postponing", "postponed", "postpones"],
+         "expl": "The modal phrase 'had to' takes the bare infinitive 'postpone'; other forms are ungrammatical here."},
+        {"text": ("After the auditor's findings, the director agreed to "
+                  "______ the budget projections. The revised numbers "
+                  "reflect actual costs."),
+         "correct": "revise",
+         "wrongs": ["revising", "revised", "revises"],
+         "expl": "The infinitive 'to revise' requires the base form 'revise'; 'revising' is a gerund and 'revised'/'revises' are conjugated."},
+    ],
+    "medium": [
+        {"text": ("The committee members along with the chair ______ the "
+                  "proposal after reviewing the data. Their support was "
+                  "unanimous."),
+         "correct": "approve",
+         "wrongs": ["approves", "approves", "approved"],
+         "expl": "The subject 'the committee members along with the chair' is plural (the phrase 'along with' does not change the number of the head noun 'members'), requiring the base verb form 'approve'."},
+        {"text": ("Neither the director nor the assistants ______ the "
+                  "recommendation. Only the board can authorize it."),
+         "correct": "oppose",
+         "wrongs": ["opposes", "oppose", "opposed"],
+         "expl": "With 'neither...nor', the verb agrees with the closer subject 'assistants' (plural), so the base form 'oppose' is required."},
+        {"text": ("The data and the analysis ______ the hypothesis. Further "
+                  "studies will test the prediction."),
+         "correct": "support",
+         "wrongs": ["supports", "support", "supported"],
+         "expl": "The compound subject 'the data and the analysis' is plural, taking the base verb form 'support'."},
+        {"text": ("Either the proposal or the amendments ______ the "
+                  "deadline. The committee will vote tomorrow."),
+         "correct": "delay",
+         "wrongs": ["delays", "delay", "delayed"],
+         "expl": "With 'either...or', the verb agrees with the closer subject 'amendments' (plural), requiring the base form 'delay'."},
+    ],
+    "hard": [
+        {"text": ("By the time the committee ______ its report, the "
+                  "deadline will have passed. Extensions are not "
+                  "permitted."),
+         "correct": "submits",
+         "wrongs": ["submit", "submitted", "will submit"],
+         "expl": "Future perfect 'will have passed' sets a future reference point; the subordinate clause requires present tense 'submits' to indicate an action completed before that future moment."},
+        {"text": ("Had the board ______ the amendment earlier, the vote "
+                  "would have proceeded differently. The delay forced a "
+                  "special session."),
+         "correct": "reviewed",
+         "wrongs": ["review", "reviews", "reviewing"],
+         "expl": "Counterfactual past perfect requires 'had + past participle' ('had reviewed'); the other forms create tense mismatches."},
+        {"text": ("The analyst recommended that the policy ______ "
+                  "immediately. Implementation begins next quarter."),
+         "correct": "be implemented",
+         "wrongs": ["is implemented", "implements", "implemented"],
+         "expl": "Mandative subjunctive after 'recommended that' requires bare infinitive 'be implemented'; indicative forms are ungrammatical here."},
+        {"text": ("Not only ______ the data support the hypothesis, but it "
+                  "also suggests a new mechanism. The findings are "
+                  "statistically significant."),
+         "correct": "does",
+         "wrongs": ["do", "did", "doing"],
+         "expl": "Inversion with 'not only' requires auxiliary 'does' for singular subject 'the data' (treated as singular in formal usage); 'do' would be plural agreement."},
+    ],
+}
+
 SYNTHESIS_FACTS = [
     {"subject": "Juniper Labs", "year1": 2009, "product": "water filter",
      "award": "Green Prize", "year2": 2021},
@@ -766,8 +1171,9 @@ def gen_command_of_evidence(rng, difficulty):
     lo = hi - gap
     correct = topic["support"](n, hi, lo)
     distractors = [fn(n, hi, lo) for fn in topic["wrong_kinds"]]
-    prompt = (f"Researcher's claim: {topic['claim']}\n\nWhich finding, if true, would "
-              f"most directly support the researcher's claim?")
+    prompt = (f"{topic['context']}\n\nResearcher's claim: {topic['claim']}\n\n"
+              f"Which finding, if true, would most directly support the "
+              f"researcher's claim?")
     choices, idx = build_choices(rng, correct, distractors)
     return {"prompt": prompt, "choices": list(choices), "answer_index": idx,
             "explanation": ("Direct support must link the claimed behavior to the "
@@ -788,132 +1194,73 @@ def gen_inferences(rng, difficulty):
 
 
 def gen_sentence_boundaries(rng, difficulty):
-    if difficulty == "easy":
-        a, b = rng.choice(BOUNDARY_CLAUSES)
-        b_lower = b[0].lower() + b[1:]
-        correct = f"{a}; {b}."
-        distractors = [f"{a}, {b}.", f"{a} {b}", f"{a}. {b_lower}."]
-        prompt = (f"Which choice correctly joins these two independent clauses into one "
-                  f"grammatical sentence?\nClause 1: \"{a}\"\nClause 2: \"{b}\"")
-        expl = ("Two independent clauses cannot be joined by only a comma "
-                "(a comma splice) or by nothing (a fused sentence); a "
-                "semicolon joins them correctly, and a sentence may not "
-                "begin with a lowercase letter.")
-    elif difficulty == "medium":
-        a, b = rng.choice(BOUNDARY_CLAUSES)
-        b_lower = b[0].lower() + b[1:]
-        adverb = rng.choice(["however", "therefore", "moreover"])
-        correct = f"{a}; {adverb}, {b_lower}."
-        distractors = [f"{a}, {adverb}, {b_lower}.", f"{a}; {adverb} {b_lower}.",
-                       f"{a}, {adverb} {b_lower}."]
-        prompt = (f"Which choice correctly joins these two independent clauses into one "
-                  f"grammatical sentence?\nClause 1: \"{a}\"\nClause 2: \"{b}\"")
-        expl = (f"A semicolon may join two independent clauses, and a conjunctive "
-                f"adverb such as '{adverb}' that follows a semicolon needs a comma "
-                f"after it; a comma alone would create a comma splice.")
-    else:
-        intro, rest = rng.choice(COLON_ITEMS)
-        rest_lower = rest[0].lower() + rest[1:]
-        correct = f"{intro}: {rest}."
-        distractors = [f"{intro}; {rest}.", f"{intro}, {rest}.", f"{intro} {rest}."]
-        prompt = (f"Which choice correctly completes the sentence?\n"
-                  f"Sentence: \"{intro} ______\"")
-        expl = (f"A colon correctly introduces the explanation that follows an "
-                f"independent clause; a semicolon would wrongly join a clause to a "
-                f"fragment, and a comma alone is too weak to introduce it.")
+    pool = BOUNDARY_PARAGRAPHS.get(difficulty) or BOUNDARY_PARAGRAPHS["easy"]
+    item = rng.choice(pool)
+    # The item has "text" with the full paragraph, "correct" and "wrongs" as the
+    # four options for how to join the clauses within the paragraph.
+    # We present the full paragraph with a blank where the join occurs.
+    # The item already has "correct" and "wrongs" as full sentence strings.
+    # But we need to show the paragraph with a blank. Let me restructure:
+    # The item has "text" = full correct paragraph, "correct" = the correct join,
+    # "wrongs" = incorrect joins.
+    # We'll present the paragraph with the joined part replaced by a blank.
+    # Actually, simpler: the item already has the correct joined sentence as "correct"
+    # and the paragraph context. We can present the paragraph with the two clauses
+    # shown and a blank between them.
+    # Looking at my data: each item has "first" and "second" clauses, and "correct"
+    # is the properly joined version.
+    # Let me present: the paragraph with the two clauses separated by "______"
+    first = item["first"]
+    second = item["second"]
+    # Find the position in the text where first + join + second occurs
+    # For simplicity, present the text with the join blanked
+    # The "text" field contains the full correct paragraph
+    # We'll replace the correct join with a blank
+    correct_join = item["correct"]
+    # Find the join in the text and replace with blank
+    # The correct join is first + join_punct + " " + second (with capitalization)
+    # For the prompt, we show the paragraph with "______" where the join goes
+    # The first clause ends, then blank, then second clause starts lowercase
+    prompt = (f"Which choice correctly completes the text?\n\n"
+              f"{first} ______ {second[0].lower() + second[1:]}.\n\n"
+              f"Which choice correctly joins the underlined clauses?")
+    correct = item["correct"]
+    distractors = item["wrongs"]
+    expl = item.get("expl", "")
     choices, idx = build_choices(rng, correct, distractors)
     return {"prompt": prompt, "choices": list(choices), "answer_index": idx,
             "explanation": expl}
 
 
 def gen_form_structure_sense(rng, difficulty):
-    if difficulty == "easy":
-        # Simple infinitive: "voted to ______"
-        verb_set = rng.choice(INFINITIVE_VERBS)
-        subject = rng.choice(AGREEMENT_SUBJECTS)
-        base, gerund, past, third = verb_set
-        correct = base
-        distractors = [gerund, past, third]
-        prompt = (f"Facing a budget shortfall, {subject} voted to ______ the construction "
-                  f"deadline by six months.\n\nWhich choice completes the text so that it "
-                  f"conforms to the conventions of Standard English?")
-        expl = (f"After 'to' used as an infinitive marker, English requires "
-                f"the base verb form '{base}', not a participle or a conjugated form.")
-    elif difficulty == "medium":
-        # Subject-verb agreement with complex subject
-        subject = rng.choice(COMPLEX_SUBJECTS)
-        verb_set = rng.choice(AGREEMENT_VERBS)
-        base, third = verb_set
-        is_plural = rng.choice([True, False])
-        if is_plural:
-            correct = base
-            distractors = [third, base + "s", third + "ed"]
-            # Make subject plural
-            subject = subject.replace("each ", "all ").replace("every ", "all ")
-        else:
-            correct = third
-            distractors = [base, third + "s", base + "ed"]
-        prompt = (f"{subject} ______ the proposal after reviewing the data.\n\n"
-                  f"Which choice completes the text so that it conforms to "
-                  f"the conventions of Standard English?")
-        expl = (f"The subject '{subject}' is {'plural' if is_plural else 'singular'}, "
-                f"requiring the {'base' if is_plural else 'third-person singular'} verb form '{correct}'.")
-    else:  # hard
-        # Verb tense/aspect consistency in complex sentence
-        template = rng.choice(TENSE_TEMPLATES)
-        correct = template["correct"]
-        distractors = template["wrongs"]
-        prompt = template["prompt"]
-        expl = template["expl"]
+    pool = FSS_PARAGRAPHS.get(difficulty) or FSS_PARAGRAPHS["easy"]
+    item = rng.choice(pool)
+    # The item has a paragraph with a blank, correct answer, and distractors
+    prompt = (f"{item['text']}\n\nWhich choice completes the text so that it "
+              f"conforms to the conventions of Standard English?")
+    correct = item["correct"]
+    distractors = item["wrongs"]
+    expl = item["expl"]
     choices, idx = build_choices(rng, correct, distractors)
-    return {"prompt": prompt, "choices": list(choices), "answer_index": idx, "explanation": expl}
+    return {"prompt": prompt, "choices": list(choices), "answer_index": idx,
+            "explanation": expl}
 
 
 def gen_transitions(rng, difficulty):
-    if difficulty == "easy":
-        relation, first, second = rng.choice(TRANSITION_SETS)
-        connectors = RELATION_CONNECTORS
-        correct = rng.choice(connectors[relation])
-        other = []
-        for rel, words in connectors.items():
-            if rel != relation:
-                other.extend(words)
-        rng.shuffle(other)
-        distractors = other[:3]
-        prompt = (f"{first.capitalize()}; ______, {second}.\n\nWhich transition best fits "
-                  f"the relationship between the two clauses?")
-        relation_desc = {
-            "consequence": "the second clause is a result of the first",
-            "contrast": "the second clause contrasts with the first",
-            "addition": "the second clause adds related information",
-            "concession": "the second clause holds despite the first",
-        }[relation]
-        expl = (f"{relation_desc.capitalize()}, so a {relation} transition "
-                f"such as '{correct}' is required; the other options signal "
-                "different relationships.")
-    elif difficulty == "medium":
-        first, second = rng.choice(CONCESSION_SETS)
-        second_lower = second[0].lower() + second[1:]
-        correct = rng.choice(["nevertheless", "even so", "still"])
-        distractors = ["therefore", "moreover", "likewise"]
-        prompt = (f"{first.capitalize()}; ______, {second_lower}.\n\nWhich transition "
-                  f"best fits the relationship between the two clauses?")
-        expl = ("The second clause is surprising given the first, so a concession "
-                f"transition such as '{correct}' is required; 'therefore' signals "
-                "result, and 'moreover' and 'likewise' signal addition.")
-    else:
-        # Trap: subordinating conjunctions cannot follow a semicolon
-        first, second = rng.choice(CONCESSION_SETS)
-        second_lower = second[0].lower() + second[1:]
-        correct = "nevertheless"
-        distractors = ["although", "because", "despite"]
-        prompt = (f"{first.capitalize()}; ______, {second_lower}.\n\nWhich transition "
-                  f"best completes the sentence so that it conforms to the "
-                  f"conventions of Standard English?")
-        expl = ("After a semicolon, a conjunctive adverb such as 'nevertheless' is "
-                "required; subordinating conjunctions ('although', 'because') and "
-                "the preposition 'despite' cannot join independent clauses after a "
-                "semicolon.")
+    pool = TRANSITION_PARAGRAPHS.get(difficulty) or TRANSITION_PARAGRAPHS["easy"]
+    item = rng.choice(pool)
+    before = item["before"]
+    first = item["first"]
+    second = item["second"]
+    after = item.get("after", "")
+    correct = item["correct"]
+    distractors = item["wrongs"]
+    second_lower = second[0].lower() + second[1:]
+    prompt = (f"{before} {first}; ______, {second_lower}. {after}\n\n"
+              f"Which transition best completes the text?")
+    expl = (f"The text shows a logical relationship, so a transition such as "
+            f"'{correct}' is required; the other options signal different "
+            f"relationships.")
     choices, idx = build_choices(rng, correct, distractors)
     return {"prompt": prompt, "choices": list(choices), "answer_index": idx,
             "explanation": expl}
