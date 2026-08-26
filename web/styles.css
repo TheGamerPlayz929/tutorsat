@@ -172,6 +172,41 @@ body {
 }
 .user-chip button:hover { border-color: var(--ink); color: var(--ink); }
 
+.dropdown { position: relative; }
+.dropdown-trigger { min-width: 56px; }
+.dropdown-menu {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 140px;
+  background: var(--panel);
+  border: var(--hairline);
+  box-shadow: 0 4px 12px rgba(var(--line-rgb), 0.15);
+  border-radius: 0;
+  z-index: 20;
+  overflow: hidden;
+}
+.dropdown-menu[hidden] { display: none; }
+.dropdown-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 10px 14px;
+  background: none;
+  border: none;
+  border-bottom: var(--hairline-soft);
+  font-family: var(--font-display);
+  font-size: 0.74rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink);
+  cursor: pointer;
+}
+.dropdown-item:last-child { border-bottom: none; }
+.dropdown-item:hover { background: var(--signal-tint); color: var(--signal); }
+.dropdown-item:focus-visible { outline: 2px solid var(--signal); outline-offset: -2px; }
+
 /* ---------- calibration strip ---------- */
 
 .calibration {
@@ -187,8 +222,37 @@ body {
   overflow-x: auto;
   white-space: nowrap;
   min-height: 30px;
+  transition: max-height 200ms ease, padding 200ms ease, opacity 200ms ease;
+}
+.calibration.collapsed {
+  max-height: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  opacity: 0;
+  border-bottom: none;
+  gap: 0;
 }
 .calibration:empty { visibility: hidden; }
+.calibration-toggle {
+  flex: 0 0 auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 8px;
+  border: none;
+  background: transparent;
+  color: var(--graphite);
+  font-family: var(--font-mono);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.calibration-toggle:hover { color: var(--ink); }
+.calibration-toggle:focus-visible { outline: 2px solid var(--signal); outline-offset: 2px; }
+.calibration-toggle svg { width: 14px; height: 14px; transition: transform 150ms ease; }
+.calibration.collapsed .calibration-toggle svg { transform: rotate(-90deg); }
+.cal-label { display: inline; }
 
 .cal-ticks {
   flex: 0 0 auto;
@@ -302,6 +366,16 @@ body {
 .readout-line b { color: var(--ink); font-weight: 500; }
 
 .mode-panel { cursor: pointer; transition: none; text-align: left; font: inherit; color: inherit; padding: var(--pad-panel); }
+.mode-header { display: flex; align-items: baseline; gap: 10px; margin-bottom: 6px; }
+.mode-icon {
+  display: inline-flex;
+  width: 28px;
+  height: 28px;
+  place-items: center;
+  font-family: var(--font-mono);
+  font-size: 1rem;
+  color: var(--signal);
+}
 .mode-blurb {
   min-height: 2.9em;
   margin: 0 0 6px;
@@ -480,6 +554,7 @@ input[type="range"] { width: 100%; accent-color: var(--signal); }
   border: 1.5px solid var(--ink);
   font-family: var(--font-mono);
   font-size: 0.78rem;
+  transition: border-color 120ms ease, color 120ms ease;
 }
 
 .answer-row.selected {
@@ -501,24 +576,41 @@ input[type="range"] { width: 100%; accent-color: var(--signal); }
 
 .verdict {
   margin-top: 18px;
-  padding-top: 12px;
-  border-top: 2px solid var(--signal);
+  padding: 16px 14px;
+  border: var(--hairline);
+  background: var(--panel);
 }
-.verdict.no { border-top-color: var(--alert); }
+.verdict.no { border-color: var(--alert); }
+.verdict-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+}
 .verdict-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   font-family: var(--font-mono);
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 500;
-  letter-spacing: 0.12em;
+  letter-spacing: 0.1em;
   color: var(--signal);
   text-transform: uppercase;
 }
 .verdict.no .verdict-label { color: var(--alert); }
-.verdict .explanation { margin: 8px 0 0; font-size: 0.94rem; }
+.verdict-label::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: currentColor;
+}
+.verdict .explanation { margin: 8px 0 0; font-size: 0.92rem; line-height: 1.6; }
 .theta-line {
   display: inline-block;
-  margin-top: 10px;
-  font-size: 0.72rem;
+  margin-top: 12px;
+  font-size: 0.7rem;
   color: var(--graphite);
 }
 

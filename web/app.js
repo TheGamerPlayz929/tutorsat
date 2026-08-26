@@ -350,7 +350,7 @@ function renderCalibration(pulseTheta) {
     }
   }
 
-  $calibration.innerHTML = html;
+  document.getElementById("cal-content").innerHTML = html;
 }
 
 /* ---------------- chrome ---------------- */
@@ -684,14 +684,18 @@ async function loadThetaMap() {
 /* ---------------- home ---------------- */
 
 function modePanel(id, kicker, title, blurb, readoutSlot, goLabel, extra) {
+  const icon = id === "go-practice" ? "▸" : id === "go-mock" ? "■" : "▲";
   return `
     <button class="panel mode-panel" id="${id}">
       <p class="panel-kicker">${kicker}</p>
-      <h2>${title}</h2>
+      <div class="mode-header">
+        <span class="mode-icon" aria-hidden="true">${icon}</span>
+        <h2>${title}</h2>
+      </div>
       <p class="muted mode-blurb">${blurb}</p>
       <p class="readout-line" id="${readoutSlot}">reading calibration…</p>
       ${extra || ""}
-      <span class="mode-go">${goLabel} &#8594;</span>
+      <span class="mode-go">${goLabel} <span aria-hidden="true">→</span></span>
     </button>`;
 }
 
@@ -712,15 +716,14 @@ function renderHome() {
 
     <div class="panel" style="margin-top:18px;">
       <p class="panel-kicker">Mechanism</p>
-      <h2>How adaptivity works here</h2>
+      <h2>How adaptivity works</h2>
       <p class="how-copy">Each answered item updates your per-skill ability estimate
-      (<code>θ</code>) with a Bayesian 2-parameter-logistic model,
-      <code>P(correct) = σ(a(θ−b))</code>. The next item is the unanswered one with
-      highest <code>Fisher information</code> at your current θ: questions
-      concentrate where they tell us the most about you. In full mocks, module 2
-      difficulty branches on module-1 performance, mirroring the real digital SAT.
-      Every blueprint is drawn from a seeded
-      <code>Dirichlet–multinomial</code>, so any session reproduces exactly from its seed.</p>
+      (<code>θ</code>) with a 2-parameter logistic IRT model. The next item is the
+      unanswered one with highest <code>Fisher information</code> at your current
+      θ: questions concentrate where they tell us the most about you. In full
+      mocks, module 2 difficulty branches on module-1 performance, mirroring
+      the real digital SAT. Every blueprint is seeded, so any session reproduces
+      exactly from its seed.</p>
     </div>`;
 
   document.getElementById("go-practice").onclick = () => setView("practice-setup");
@@ -924,9 +927,8 @@ function drawPracticeQuestion(selected, result) {
 
   let answersHtml = q.choices.map((c, i) => {
     let stateClass = "";
-    let tabState = "";
     if (result) {
-      if (c === result.correct_choice) stateClass = "state-correct";
+      if (i === q.correct_choice) stateClass = "state-correct";
       else if (i === selected) stateClass = "state-incorrect";
     } else if (i === selected) {
       stateClass = "selected";
@@ -944,8 +946,10 @@ function drawPracticeQuestion(selected, result) {
   if (result) {
     verdictHtml = `
       <div class="verdict ${result.correct ? "" : "no"}">
-        <span class="verdict-label">${result.correct ? "Correct" :
-          "Incorrect: see below"}</span>
+        <div class="verdict-header">
+          <span class="verdict-label">${result.correct ? "Correct" :
+            "Incorrect: see explanation"}</span>
+        </div>
         <p class="explanation">${esc(result.explanation)}</p>
         <span class="mono theta-line">${thetaMove(result.theta_before,
           result.theta_after)} · ${esc(skillName(result.skill_id))}</span>
@@ -1444,9 +1448,9 @@ async function renderDashboard() {
   const weakSpots = data.weak_spots || [];
   let weakHtml = "";
   if (!weakSpots.length) {
-    weakHtml = `<p class="empty-note">NO RESPONSES YET :  START ADAPTIVE PRACTICE TO BEGIN CALIBRATION</p>`;
+    weakHtml = `<p class="empty-note">NO RESPONSES YET: START ADAPTIVE PRACTICE TO BEGIN CALIBRATION</p>`;
   } else if (weakSpots.every((w) => w.status === "strong")) {
-    weakHtml = `<p class="empty-note">NO WEAK SPOTS DETECTED :  KEEP THE STREAK GOING</p>`;
+    weakHtml = `<p class="empty-note">NO WEAK SPOTS DETECTED: KEEP THE STREAK GOING</p>`;
   } else {
     const rows = weakSpots.slice(0, 8).map((w, i) => {
       const badge = w.status === "struggling"
@@ -1457,7 +1461,7 @@ async function renderDashboard() {
       const link = practiceLink(w);
       const linkBtn = (i < 3 && w.status !== "strong" && link)
         ? `<a class="btn-quiet" style="padding:5px 12px;font-size:.66rem;text-decoration:none;"
-             href="${esc(link)}" target="_blank" rel="noopener noreferrer">${esc(w.tier_label)}: ${esc(domainShort(w.domain_id))} &#8599;</a>`
+             href="${esc(link)}" target="_blank" rel="noopener noreferrer">${esc(w.tier_label)}: ${esc(domainShort(w.domain_id))} →</a>`
         : "";
       return `
         <div class="acct-row">
@@ -1484,14 +1488,10 @@ async function renderDashboard() {
       <h2>Weak spots</h2>
       ${weakHtml}
     </div>
-    <div class="panel">
-      <p class="panel-kicker">Calibrated progress</p>
-      <h2>Estimated score bands</h2>
+    <div class="panel-grid">
       ${scoreCards
-        ? `<div class="panel-grid">${scoreCards}</div>`
-        : `<p class="empty-note">NO CALIBRATION YET: COMPLETE A FULL MOCK TO ESTABLISH A BAND</p>`}
-      <p class="muted mono" style="font-size:.7rem;margin-top:10px;">
-        Heuristic mapping from IRT ability to the 200–800 scale. Not an official score.</p>
+        ? scoreCards
+        : `<div class="panel"><p class="empty-note">NO CALIBRATION YET: COMPLETE A FULL MOCK TO ESTABLISH A BAND</p></div>`}
     </div>
     ${bandHistory ? `
     <div class="panel">
@@ -1746,11 +1746,12 @@ function on(id, fn) {
   if (el) el.addEventListener("click", fn);
   return el;
 }
-
 function wireChrome() {
   document.getElementById("brand-about").addEventListener("click", openAbout);
   on("about-open", openAbout);
-  on("accounts-open", openAccountPanel);  document.getElementById("about-close").addEventListener("click", closeAbout);
+  on("accts-btn", openAccountPanel);
+  on("about-btn", openAbout);
+  document.getElementById("about-close").addEventListener("click", closeAbout);
   document.getElementById("about-backdrop").addEventListener("click", (e) => {
     if (e.target === e.currentTarget) closeAbout();
   });
@@ -1764,6 +1765,36 @@ function wireChrome() {
       closeAccountPanel();
     }
   });
+
+  /* dropdown menu */
+  const moreBtn = document.getElementById("more-btn");
+  const moreMenu = document.getElementById("more-menu");
+  moreBtn.addEventListener("click", () => {
+    const open = moreMenu.hidden;
+    moreMenu.hidden = !open;
+    moreBtn.setAttribute("aria-expanded", String(open));
+  });
+  document.addEventListener("click", (e) => {
+    if (!moreBtn.contains(e.target) && !moreMenu.contains(e.target)) {
+      moreMenu.hidden = true;
+      moreBtn.setAttribute("aria-expanded", "false");
+    }
+  });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && !moreMenu.hidden) {
+      moreMenu.hidden = true;
+      moreBtn.setAttribute("aria-expanded", "false");
+    }
+  });
+
+  /* calibration strip toggle */
+  const calRoot = document.getElementById("calibration");
+  const calToggle = calRoot.querySelector(".calibration-toggle");
+  calToggle.addEventListener("click", () => {
+    const collapsed = calRoot.classList.toggle("collapsed");
+    calToggle.setAttribute("aria-expanded", String(!collapsed));
+  });
+
   document.getElementById("theme-toggle").addEventListener("click", () => {
     const next = document.documentElement.dataset.theme === "dark"
       ? "light" : "dark";

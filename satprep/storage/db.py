@@ -162,14 +162,14 @@ class Store:
     def add_response(self, session_id: str, rec, user_id: str = None) -> None:
         """Add a response. If user_id not provided, look it up from the session."""
         q = rec.question
-        if user_id is None:
-            try:
-                row = self._conn.execute(
-                    "SELECT user_id FROM sessions WHERE session_id = ?", (session_id,)).fetchone()
-                user_id = row["user_id"] if row else "unknown"
-            except Exception:
-                user_id = "unknown"
         with self._lock:
+            if user_id is None:
+                try:
+                    row = self._conn.execute(
+                        "SELECT user_id FROM sessions WHERE session_id = ?", (session_id,)).fetchone()
+                    user_id = row["user_id"] if row else "unknown"
+                except Exception:
+                    user_id = "unknown"
             self._conn.execute(
                 "INSERT INTO responses (session_id, user_id, question_id, skill_id, difficulty,"
                 " choice_index, correct, a, b, theta_before, theta_after, answered_at)"
