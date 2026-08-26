@@ -1712,16 +1712,20 @@ function renderAccountList() {
 }
 
 async function switchToAccount(id) {
-  const acct = findAccount(id);
-  localStorage.setItem("satprep_uid", id);
-  state.user = { user_id: id, name: (acct && acct.name) || "Student",
-                 provider: id.startsWith("g-") ? "google" : undefined };
-  await loadThetaMap();
-  window.practiceState = null;
-  mockState = null;
-  clearInterval(window.mockTimerHandle);
-  closeAccountPanel();
-  render();
+  try {
+    const acct = findAccount(id);
+    localStorage.setItem("satprep_uid", id);
+    state.user = { user_id: id, name: (acct && acct.name) || "Student",
+                   provider: id.startsWith("g-") ? "google" : undefined };
+    await loadThetaMap();
+    window.practiceState = null;
+    mockState = null;
+    clearInterval(window.mockTimerHandle);
+    closeAccountPanel();
+    render();
+  } catch (err) {
+    showError("Failed to switch account: " + err.message);
+  }
 }
 
 async function deleteAccount(id) {
