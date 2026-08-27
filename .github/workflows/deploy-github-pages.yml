@@ -29,6 +29,8 @@ jobs:
       - name: Build static site
         run: |
           python tools/sync_site.py
+          # Copy config.js which is preserved by sync_site.py
+          cp web/config.js site/config.js
 
       - name: Inject base path for GitHub Pages
         run: |
