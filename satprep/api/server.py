@@ -1079,7 +1079,13 @@ def serve(host="127.0.0.1", port=8765, db_path="satprep.db",
           stateless_secret=None):
     import signal
 
-    origins = {o.strip() for o in (allowed_origins or "").split(",") if o.strip()}
+    # Always allow common deployment frontends (Firebase Hosting, GitHub Pages)
+    default_origins = {
+        "https://tutorsat.web.app",
+        "https://thegamerplayz929.github.io",
+    }
+    env_origins = {o.strip() for o in (allowed_origins or "").split(",") if o.strip()}
+    origins = default_origins | env_origins
     app = AppState(db_path=db_path, google_client_id=google_client_id,
                    allowed_origins=origins, stateless_secret=stateless_secret)
     Handler.app = app
