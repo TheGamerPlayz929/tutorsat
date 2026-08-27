@@ -570,6 +570,12 @@ def gen_ratios_rates(rng, difficulty):
         distract = [amt_a, amt_b + b, scale, amt_b + 2]
         expl = (f"{amt_a} \u00f7 {a} = {scale} batches, so {ing_b} needed = {b} \u00d7 "
                 f"{scale} = {amt_b}.")
+        profile = DifficultyProfile(
+            reasoning_steps=1, decision_points=0,
+            representation_translation=False, concept_interaction=False,
+            distractor_quality=1, information_density=0, computation_burden=0,
+            directness=0, constraint_complexity=False,
+        )
     elif difficulty == "medium":
         # Constant rate: find distance at a second quantity
         mpg = _pick(rng, 15, 40, exclude=(0,))
@@ -583,8 +589,14 @@ def gen_ratios_rates(rng, difficulty):
         distract = [miles1, miles2 + mpg, miles2 - mpg, mpg * g1 * g2 // max(g1 + g2, 1)]
         expl = (f"Rate = {miles1} \u00f7 {g1} = {mpg} miles per gallon. On {g2} "
                 f"gallons: {mpg} \u00d7 {g2} = {miles2} miles.")
+        profile = DifficultyProfile(
+            reasoning_steps=2, decision_points=1,
+            representation_translation=True, concept_interaction=False,
+            distractor_quality=1, information_density=0, computation_burden=0,
+            directness=1, constraint_complexity=False,
+        )
     else:
-        # Combined work rates
+        # Combined work rates — requires both rates, sum, then scale
         r_a = _pick(rng, 15, 40)
         r_b = _pick(rng, 15, 40)
         t_a = _pick(rng, 3, 6)
@@ -603,9 +615,15 @@ def gen_ratios_rates(rng, difficulty):
         expl = (f"Machine A: {parts_a} \u00f7 {t_a} = {r_a} per minute; Machine B: "
                 f"{parts_b} \u00f7 {t_b} = {r_b} per minute. Together: {combined} per "
                 f"minute \u00d7 {t_tot} minutes = {total}.")
+        profile = DifficultyProfile(
+            reasoning_steps=3, decision_points=2,
+            representation_translation=True, concept_interaction=True,
+            distractor_quality=2, information_density=1, computation_burden=0,
+            directness=2, constraint_complexity=True,
+        )
     choices, idx = build_choices(rng, correct, [str(d) for d in distract])
     return {"prompt": prompt, "choices": list(choices), "answer_index": idx,
-            "explanation": expl}
+            "explanation": expl, "difficulty_profile": profile.__dict__}
 
 
 def gen_percentages(rng, difficulty):
