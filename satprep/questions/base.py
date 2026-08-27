@@ -40,13 +40,14 @@ class Question:
     section: str
     domain_id: str
     skill_id: str
-    difficulty: str
+    difficulty: str  # validated instance difficulty (easy/medium/hard)
     a: float
     b: float
     prompt: str
     choices: Tuple[str, ...]
     answer_index: int
     explanation: str
+    difficulty_profile: dict = None  # internal DifficultyProfile as dict (§8, not shown to student)
 
     def is_correct(self, choice_index: int) -> bool:
         return choice_index == self.answer_index

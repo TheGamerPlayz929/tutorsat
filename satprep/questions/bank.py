@@ -1,7 +1,10 @@
+from dataclasses import asdict
+
 from ..core.framework import get_domain
 from ..core.rng import derive_seed, rng_for
 from .base import GenerationError, Question, draw_irt_params
 from . import math_gen, rw_gen
+from .difficulty import profile_from_dict, score_difficulty
 
 GENERATORS = {}
 GENERATORS.update(math_gen.GENERATORS)
@@ -20,7 +23,7 @@ class QuestionBank:
 
     def make(self, cell, item_seq: int, master_seed=None, salt=None,
              avoid=None) -> Question:
-        domain_id, skill_id, difficulty = cell
+        domain_id, skill_id, difficulty = cell  # requested / template difficulty
         seed = self.master_seed if master_seed is None else master_seed
         gen = GENERATORS.get(skill_id)
         if gen is None:
@@ -28,18 +31,40 @@ class QuestionBank:
         avoid = avoid if avoid is not None else set()
         payload = None
         chosen_rng = None
+        chosen_profile = None
+        chosen_instance_tier = difficulty
+        # Hard-gate validation (§5, §10): a HARD cell must produce a validated hard instance
         for attempt in range(12):
             rng = rng_for(seed, "item", salt, item_seq, domain_id, skill_id,
                           difficulty, attempt)
             candidate = gen(rng, difficulty)
+            prof = profile_from_dict(candidate.get("difficulty_profile"))
+            instance_tier, reasons, prof_used = score_difficulty(candidate, prof)
+            # Enforce hard gate: requested hard must be instance hard
+            if difficulty == "hard" and instance_tier != "hard":
+                # keep first payload as fallback for demotion after loop
+                if payload is None:
+                    payload, chosen_rng, chosen_profile, chosen_instance_tier = \
+                        candidate, rng, prof_used, instance_tier
+                continue
             if payload is None:
-                payload, chosen_rng = candidate, rng
+                payload, chosen_rng, chosen_profile, chosen_instance_tier = \
+                    candidate, rng, prof_used, instance_tier
             if candidate["prompt"] not in avoid:
-                payload, chosen_rng = candidate, rng
+                payload, chosen_rng, chosen_profile, chosen_instance_tier = \
+                    candidate, rng, prof_used, instance_tier
                 break
+        # Fallback: if no hard-validated item found after 12 attempts, demote
+        if payload is None:
+            raise GenerationError("could not generate item after 12 attempts")
         rng = chosen_rng
-        a, b = draw_irt_params(rng, difficulty)
-        question_id = f"q-{derive_seed(seed, 'item', salt, item_seq, domain_id, skill_id, difficulty):016x}"
+        # Validated tier becomes the stored difficulty (§7 instance_difficulty)
+        validated_difficulty = chosen_instance_tier if difficulty == "hard" else difficulty
+        # If the validated tier differs from requested, use validated for ID hashing
+        # so empirical calibration keys on true difficulty.
+        id_difficulty = validated_difficulty
+        a, b = draw_irt_params(rng, validated_difficulty)
+        question_id = f"q-{derive_seed(seed, 'item', salt, item_seq, domain_id, skill_id, id_difficulty):016x}"
         section = get_domain(domain_id).section
         avoid.add(payload["prompt"])
         return Question(
@@ -47,13 +72,14 @@ class QuestionBank:
             section=section,
             domain_id=domain_id,
             skill_id=skill_id,
-            difficulty=difficulty,
+            difficulty=validated_difficulty,
             a=round(a, 4),
             b=round(b, 4),
             prompt=payload["prompt"],
             choices=tuple(payload["choices"]),
             answer_index=int(payload["answer_index"]),
             explanation=payload["explanation"],
+            difficulty_profile=asdict(chosen_profile) if chosen_profile else None,
         )
 
     def fill_blueprint(self, blueprint, section=None):

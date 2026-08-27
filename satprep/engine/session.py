@@ -77,6 +77,10 @@ class PracticeSession:
     def _exploration_score(self, q: Question, theta: float) -> float:
         """Add exploration noise for uncalibrated items to prevent clustering."""
         base_info = fisher_information(q.a, q.b, theta)
+        # Only explore when calibration data was explicitly provided (server path);
+        # bare PracticeSession() in tests/scripts stays deterministic max-information.
+        if not self.calibration_info:
+            return base_info
         if self._is_calibrated(q.question_id):
             return base_info
         # For uncalibrated items, mix in exploration

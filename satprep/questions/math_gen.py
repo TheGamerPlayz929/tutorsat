@@ -2,6 +2,7 @@ import math
 from fractions import Fraction
 
 from .base import GenerationError, build_choices, fmt_number
+from .difficulty import DifficultyProfile
 
 TRIPLES = [(3, 4, 5), (5, 12, 13), (8, 15, 17), (7, 24, 25), (9, 40, 41)]
 
@@ -201,24 +202,41 @@ def gen_linear_word_problems(rng, difficulty):
         prompt = (f"A studio charges a one-time fee of {sym}{fee} plus {sym}{rate} "
                   f"per class. If a student pays a total of {sym}{total}, how many "
                   f"classes did the student take?")
-        ans, expl_val = str(n), total
+        ans = str(n)
         distract = [n + 1, n - 1, round(total / rate), n + 2]
         expl = (f"Total cost = {fee} + {rate}n = {total}, so {rate}n = {total - fee} "
                 f"and n = {ans}.")
         correct = ans
+        profile = DifficultyProfile(
+            reasoning_steps=1, decision_points=0,
+            representation_translation=False, concept_interaction=False,
+            distractor_quality=1, information_density=0, computation_burden=0,
+            directness=0, constraint_complexity=False,
+        )
     elif difficulty == "medium":
-        n = _pick(rng, 4, 14)
-        total = fee + rate * n
-        prompt = (f"A service charges a one-time signup fee of {sym}{fee} plus "
-                  f"{sym}{rate} per session. A customer spent a total of {sym}{total}. "
-                  f"How many paid sessions did the customer attend?")
-        correct = str(n) + " sessions"
-        distract = [round(total / rate), n - 1, n + 2, round((total - fee) / rate) + 1]
-        distract = [d + " sessions" for d in map(str, distract)]
-        expl = (f"{fee} + {rate}n = {total} gives {rate}n = {total - fee}, "
-                f"so n = {total - fee} ÷ {rate} = {n}.")
+        # §3.1-3.5: requires translating offset model (free sessions) and
+        # incorporating constraint: first k classes included.
+        k_free = _pick(rng, 2, 4)
+        n_total = _pick(rng, 6, 14)
+        n_paid = n_total - k_free
+        total = fee + rate * n_paid
+        prompt = (f"A studio charges a one-time fee of {sym}{fee}. The first "
+                  f"{k_free} classes are included, and each additional class costs "
+                  f"{sym}{rate}. A student pays a total of {sym}{total}. How many "
+                  f"classes did the student attend in total?")
+        correct = str(n_total)
+        distract = [str(n_paid), str(n_total - 1), str(n_total + 1), str(round(total / rate))]
+        expl = (f"Paid classes m: {fee}+{rate}m={total} → {rate}m={total - fee} → m={n_paid}. "
+                f"Total classes = m+{k_free}={n_total}.")
+        profile = DifficultyProfile(
+            reasoning_steps=2, decision_points=1,
+            representation_translation=True, concept_interaction=False,
+            distractor_quality=2, information_density=1, computation_burden=0,
+            directness=1, constraint_complexity=True,
+        )
     else:
         # Two-plan comparison: after how many sessions do plans cost the same?
+        # Hard: non-obvious model construction for both plans + break-even reasoning
         rate_a = _pick(rng, 6, 12)
         rate_b = _pick(rng, 3, rate_a - 2)
         n_eq = _pick(rng, 4, 12)
@@ -234,9 +252,15 @@ def gen_linear_word_problems(rng, difficulty):
         expl = (f"{fee_a} + {rate_a}n = {fee_b} + {rate_b}n gives "
                 f"{rate_a - rate_b}n = {fee_b - fee_a}, so n = {fee_b - fee_a} ÷ "
                 f"{rate_a - rate_b} = {n_eq}.")
+        profile = DifficultyProfile(
+            reasoning_steps=3, decision_points=2,
+            representation_translation=True, concept_interaction=True,
+            distractor_quality=2, information_density=1, computation_burden=0,
+            directness=2, constraint_complexity=True,
+        )
     choices, idx = build_choices(rng, correct, distract)
     return {"prompt": prompt, "choices": list(choices), "answer_index": idx,
-            "explanation": expl}
+            "explanation": expl, "difficulty_profile": profile.__dict__}
 
 
 def gen_equivalent_expressions(rng, difficulty):
@@ -307,6 +331,12 @@ def gen_nonlinear_equations(rng, difficulty):
         distract = [min(r1, r2), -max(r1, r2), max(r1, r2) + 1, p]
         expl = (f"Factor: (x - {r1})(x - {r2}) = 0, so x = {r1} or x = {r2}; "
                 f"the larger is {max(r1, r2)}.")
+        profile = DifficultyProfile(
+            reasoning_steps=1, decision_points=0,
+            representation_translation=False, concept_interaction=False,
+            distractor_quality=1, information_density=0, computation_burden=0,
+            directness=0, constraint_complexity=False,
+        )
     elif difficulty == "medium":
         variant = rng.choice(["radical", "leading_coeff"])
         if variant == "radical":
@@ -325,6 +355,12 @@ def gen_nonlinear_equations(rng, difficulty):
                         n * n]
             expl = (f"Square both sides: {k}x + {m} = {n * n}. So {k}x = {rem} and "
                     f"x = {x}. Check: \u221a({k}\u00b7{x} + {m}) = {n}.")
+            profile = DifficultyProfile(
+                reasoning_steps=2, decision_points=1,
+                representation_translation=False, concept_interaction=False,
+                distractor_quality=1, information_density=0, computation_burden=0,
+                directness=1, constraint_complexity=False,
+            )
         else:  # leading_coeff
             r1 = _pick(rng, -5, 5, exclude=(0,))
             r2 = _pick(rng, -5, 5, exclude=(r1, 0))
@@ -336,11 +372,17 @@ def gen_nonlinear_equations(rng, difficulty):
             distract = [min(r1, r2), -max(r1, r2), max(r1, r2) + 1, a]
             expl = (f"Divide by {a} and factor: (x - {r1})(x - {r2}) = 0, giving "
                     f"x = {r1} or x = {r2}. The larger solution is {max(r1, r2)}.")
+            profile = DifficultyProfile(
+                reasoning_steps=2, decision_points=1,
+                representation_translation=False, concept_interaction=False,
+                distractor_quality=1, information_density=0, computation_burden=1,
+                directness=0, constraint_complexity=False,
+            )
     else:
-        # Hard: ONLY genuinely hard variants - no factorable quadratics
-        variant = rng.choice(["quadratic_formula", "completing_square", "u_substitution"])
+        # Hard: ONLY genuinely hard variants — trivial (x+p)^2=q removed (§5, Ex C)
+        variant = rng.choice(["quadratic_formula", "contextual", "u_substitution"])
         if variant == "quadratic_formula":
-            # Roots requiring quadratic formula (discriminant not perfect square)
+            # Bare quadratic with irrational roots — direct, not hard; will be demoted by gate
             while True:
                 a = _pick(rng, 1, 5)
                 b = _pick(rng, -8, 8)
@@ -359,23 +401,32 @@ def gen_nonlinear_equations(rng, difficulty):
             distract = [wrong1, wrong2, wrong3]
             expl = (f"Quadratic formula: x = ({-b} \u00b1 \u221a({disc})) / {2*a}. "
                     f"The larger root is {correct}.")
-        elif variant == "completing_square":
-            # (x + p)^2 = q form where q is not a perfect square
-            p = _pick(rng, -5, 5)
-            q = _pick(rng, 2, 10)
-            while q in [1, 4, 9, 16, 25]:  # avoid perfect squares
-                q = _pick(rng, 2, 10)
-            import math
-            r1 = -p + math.sqrt(q)
-            r2 = -p - math.sqrt(q)
-            correct = fmt_number(max(r1, r2))
-            wrong1 = fmt_number(min(r1, r2))
-            wrong2 = fmt_number(-p + q)
-            wrong3 = fmt_number(-p)
-            prompt = f"If (x + {p})\u00b2 = {q}, what is the larger solution?"
-            distract = [wrong1, wrong2, wrong3]
-            expl = (f"Take square roots: x + {p} = \u00b1\u221a{q}. "
-                    f"x = -{p} \u00b1 \u221a{q}. Larger: {correct}.")
+            profile = DifficultyProfile(
+                reasoning_steps=2, decision_points=1,
+                representation_translation=False, concept_interaction=False,
+                distractor_quality=1, information_density=0, computation_burden=1,
+                directness=0, constraint_complexity=False,
+            )
+        elif variant == "contextual":
+            # Rectangle area with length = mult*width + k, area given — requires
+            # words→equation translation, constraint (positive root), interaction geometry+algebra
+            mult = rng.choice([2, 3])
+            k = _pick(rng, 1, 5)
+            w = _pick(rng, 3, 9)
+            area = w * (mult * w + k)
+            length = mult * w + k
+            prompt = (f"A rectangle has length {k} feet more than {mult} times its width. "
+                      f"Its area is {area} square feet. What is the width of the rectangle, in feet?")
+            correct = str(w)
+            distract = [str(length), str(w + 1), str(area // w if w != 0 else w + 2), str(-w)]
+            expl = (f"Let width = w, length = {mult}w+{k}. Area: w({mult}w+{k})={area} → "
+                    f"{mult}w²+{k}w-{area}=0 → w={w} (positive root; negative root rejected).")
+            profile = DifficultyProfile(
+                reasoning_steps=3, decision_points=2,
+                representation_translation=True, concept_interaction=True,
+                distractor_quality=2, information_density=1, computation_burden=0,
+                directness=2, constraint_complexity=True,
+            )
         else:  # u_substitution
             # x^4 + bx^2 + c = 0 form
             u1 = _pick(rng, 1, 9)
@@ -396,10 +447,16 @@ def gen_nonlinear_equations(rng, difficulty):
             expl = (f"Substitute u = x\u00b2: u\u00b2 + {b}u + {c} = 0. "
                     f"Roots: u = {u1}, {u2}. Real x = \u00b1\u221a{max(u1, u2)}. "
                     f"Largest: {correct}.")
+            profile = DifficultyProfile(
+                reasoning_steps=3, decision_points=2,
+                representation_translation=True, concept_interaction=True,
+                distractor_quality=2, information_density=1, computation_burden=0,
+                directness=2, constraint_complexity=True,
+            )
     choices, idx = build_choices(rng, correct, [str(d) if isinstance(d, (int, float)) else d
                                                 for d in distract])
     return {"prompt": prompt, "choices": list(choices), "answer_index": idx,
-            "explanation": expl}
+            "explanation": expl, "difficulty_profile": profile.__dict__}
 
 
 def gen_nonlinear_systems(rng, difficulty):
