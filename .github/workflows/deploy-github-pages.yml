@@ -29,8 +29,10 @@ jobs:
       - name: Build static site
         run: |
           python tools/sync_site.py
-          # Copy config.js which is preserved by sync_site.py
-          cp web/config.js site/config.js
+          # Generate config.js with correct API base for GitHub Pages
+          echo 'window.SATPREP_API_BASE = "https://tutorsat.onrender.com";' > site/config.js
+          # Append any custom links from source config.js
+          grep -A 100 'SATPREP_LINKS' web/config.js >> site/config.js 2>/dev/null || true
 
       - name: Inject base path for GitHub Pages
         run: |
